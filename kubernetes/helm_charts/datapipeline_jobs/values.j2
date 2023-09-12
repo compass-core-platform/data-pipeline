@@ -464,7 +464,7 @@ assessment-aggregator:
       }
     }
     assessment.skip.missingRecords = true
-  #  content.read.api = "{{ content_read_api_host }}/{{ content_read_api_endpoint }}"
+    content.read.api = "https://compass-dev.tarento.com/api/content/v1/read/"
     user.activity.agg.type="attempt_metrics"
 
   flink-conf: |+
@@ -577,4 +577,3 @@ program-user-info:
     parallelism.default: 1
     jobmanager.execution.failover-strategy: region
     taskmanager.memory.network.fraction: 0.1
-content.read.api="https://compass-dev.tarento.com/api/content/v1/read/"
