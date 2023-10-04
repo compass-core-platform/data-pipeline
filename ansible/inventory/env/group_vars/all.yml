@@ -123,7 +123,7 @@ default_channel: "org.sunbird"
 download_neo4j: true
 neo4j_upstream_download: false
 enable_suppress_exception: false
-enable_rc_certificate: true
+enable_rc_certificate: false
 certificate_migrator_enable_suppress_exception: false
 
 ### kafka and zookeeper ip vars and being used in kafka topiccreation role.
