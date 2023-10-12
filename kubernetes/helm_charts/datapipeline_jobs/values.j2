@@ -464,7 +464,7 @@ assessment-aggregator:
       }
     }
     assessment.skip.missingRecords = true
-    content.read.api = "https://compass-dev.tarento.com/api/content/v1/read/"
+    content.read.api = "{{{{ content_read_api_host }}}}/api/content/v1/read/"
     user.activity.agg.type="attempt_metrics"
 
   flink-conf: |+
