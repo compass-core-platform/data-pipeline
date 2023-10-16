@@ -54,7 +54,7 @@ class CollectionCertPreProcessorFn(config: CollectionCertPreProcessorConfig, htt
         try {
             metrics.incCounter(config.totalEventsCount)
             if(event.isValid()(config)) {
-                val certTemplates = fetchTemplates(event)(metrics).filter(template => template._2.getOrElse("url", "").asInstanceOf[String].contains(".svg"))
+                val certTemplates = fetchTemplates(event)(metrics).filter(template => template._2.getOrElse("url", "https://storageco.blob.core.windows.net/content-storage/content/do_113900550490169344151/artifact/do_113900550490169344151_1696844595814_abc.svg").asInstanceOf[String].contains(".svg"))
                 logger.info("CollectionCertPreProcessor:: processElement:: certTemplates:: " + certTemplates)
                 if(!certTemplates.isEmpty) {
                     certTemplates.map(template => {
