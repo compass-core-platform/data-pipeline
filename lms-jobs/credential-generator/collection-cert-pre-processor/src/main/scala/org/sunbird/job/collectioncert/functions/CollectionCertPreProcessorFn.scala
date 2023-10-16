@@ -89,8 +89,11 @@ class CollectionCertPreProcessorFn(config: CollectionCertPreProcessorConfig, htt
         val row: Row = cassandraUtil.findOne(query.toString)
         if(null != row && !row.isNull(config.certTemplates)) {
             val templates = row.getMap(config.certTemplates, TypeToken.of(classOf[String]), TypeTokens.mapOf(classOf[String], classOf[String]))
+            logger.info(s"templates printing :${templates}")
+            logger.info("converts the Java Map templates",templates.asScala.map(template => (template._1 -> template._2.asScala.toMap)).toMap)
             templates.asScala.map(template => (template._1 -> template._2.asScala.toMap)).toMap
         }else {
+            logger.info("templates is empty :")
             Map[String, Map[String, String]]()
         }
     }
