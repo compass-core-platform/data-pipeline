@@ -328,7 +328,7 @@ collection-cert-pre-processor:
     content_read_api = "/content/v3/read"
     service {
       content.basePath = "{{ content_service_base_url }}"
-      learner.basePath = "http://learner-service:9000"
+      learner.basePath = "http://learner-service.dev.svc.cluster.local:9000"
     }
     enable.suppress.exception = {{ collection_certificate_pre_processor_enable_suppress_exception | lower }}
     redis-meta {
