@@ -142,6 +142,7 @@ class NotifierFunction(config: CertificateGeneratorConfig, httpUtil: HttpUtil, @
 
   private def getUserDetails(userId: String)(metrics: Metrics): Map[String, AnyRef] = {
     logger.info("getting user info for id {}", userId)
+    logger.info("printing uri {}",httpUtil.get(config.learnerServiceBaseUrl + "/private/user/v1/read/"))
     val httpResponse = httpUtil.get(config.learnerServiceBaseUrl + "/private/user/v1/read/" + userId)
     logger.info("printing uri {}",httpUtil.get(config.learnerServiceBaseUrl + "/private/user/v1/read/"))
     logger.info("httpResponse  {}",httpResponse.status)
