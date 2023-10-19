@@ -40,6 +40,7 @@ object SvgGenerator {
 
 
   private def replaceTemplateVars(svgContent: String, certificateExtension: CertificateExtension, encodeQrCode: String): String = {
+    logger.info("svgContent {}", svgContent)
     val varResolver = new VarResolver(certificateExtension)
     val certData: java.util.Map[String, String] = varResolver.getCertMetaData
     certData.put("qrCodeImage", "data:image/png;base64," + encodeQrCode)
