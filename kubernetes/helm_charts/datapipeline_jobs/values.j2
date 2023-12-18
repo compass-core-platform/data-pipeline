@@ -389,9 +389,9 @@ collection-certificate-generator:
     cloud_storage_cname_url = "{{ cloud_storage_cname_url }}"
     service {
       certreg.basePath = "{{ cert_reg_service_base_url }}"
-      learner.basePath = "http://learner-service.dev.svc.cluster.local:9000"
+      learner.basePath = "http://{{private_ingressgateway_ip}}/learner"
       enc.basePath = "{{ enc_service_base_url }}"
-      rc.basePath = "http://registry-service.dev.svc.cluster.local:8081/api/v1"
+      rc.basePath = "http://{{private_ingressgateway_ip}}/registry-service/api/v1"
       rc.entity = "{{ cert_rc_entity }}"
     }
     enable.suppress.exception = {{ collection_certificate_generator_enable_suppress_exception | lower }}
