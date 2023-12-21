@@ -238,7 +238,10 @@ class AssessmentAggregatorFunction(config: AssessmentAggregatorConfig,
   }
 
   def getQuestionCountFromAPI(contentId: String)(metrics: Metrics) = {
-    val contentReadResp = JSONUtil.deserialize[util.HashMap[String, AnyRef]](restUtil.get(config.contentReadAPI.concat(contentId)))
+//    val contentReadResp = JSONUtil.deserialize[util.HashMap[String, AnyRef]](restUtil.get(config.contentReadAPI.concat(contentId)))
+    val response = restUtil.get(config.contentReadAPI.concat(contentId))
+    logger.info("Successfully response: "+response)
+    val contentReadResp = JSONUtil.deserialize[util.HashMap[String, AnyRef]](response)
     if (contentReadResp.get("responseCode").asInstanceOf[String].toUpperCase.equalsIgnoreCase("OK")) {
       metrics.incCounter(config.apiHitSuccessCount)
       val result = contentReadResp.getOrDefault("result", new util.HashMap()).asInstanceOf[util.Map[String, AnyRef]]
