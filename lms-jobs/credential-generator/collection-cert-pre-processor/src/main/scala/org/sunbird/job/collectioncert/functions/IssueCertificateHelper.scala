@@ -231,7 +231,11 @@ trait IssueCertificateHelper {
         val recipientName = nullStringCheck(firstName).concat(" ").concat(nullStringCheck(lastName)).trim
        // val courseName = getCourseName(event.courseId)(metrics, config, cache, httpUtil)
         val courseData = getCourseName(event.courseId)(metrics, config, cache, httpUtil)
-        val courseName = courseData.getOrElse("name", "").asInstanceOf[String].filter(_ >= ' ')
+        logger.info("printing courseDAta "+courseData)
+//        val courseName = courseData.getOrElse("name", "").asInstanceOf[String].filter(_ >= ' ')
+          val courseName = courseData.get("name").collect {
+            case name: String => StringContext.processEscapes(name).filter(_ >= ' ')
+          }.getOrElse("")
         logger.info("printing courseDAta "+courseData)
 //        val competencyName = courseData.getOrElse("competency", List.empty[String]).asInstanceOf[List[String]]
 //        val competencyLevel = courseData.getOrElse("competencyLevel", List.empty[String]).asInstanceOf[List[String]]
