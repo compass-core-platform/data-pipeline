@@ -48,6 +48,7 @@ class CollectionCertPreProcessorConfig(override val config: Config) extends Base
     val learnerBasePath = config.getString("service.learner.basePath")
     val userReadApi = config.getString("user_read_api")
     val contentReadApi = config.getString("content_read_api")
+    val termReadApi = config.getString("term_read_api")
 
     // Metric List
     val totalEventsCount = "total-events-count"
@@ -84,4 +85,6 @@ class CollectionCertPreProcessorConfig(override val config: Config) extends Base
     val contentCloudStorageContainer = config.getString("content_cloud_storage_container")
     val cnameUrl = config.getString("cloud_storage_cname_url")
     val baseUrl = if(cnameUrl.isEmpty) cloudStoreBasePath else cnameUrl
+    val targetTaxonomyCategory4Ids:String = "targetTaxonomyCategory4Ids";
+    val targetTaxonomyCategory5Ids:String = "targetTaxonomyCategory5Ids";
 }
