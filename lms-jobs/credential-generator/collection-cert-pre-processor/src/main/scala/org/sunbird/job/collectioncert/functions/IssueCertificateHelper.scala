@@ -193,6 +193,7 @@ trait IssueCertificateHelper {
         if(null == courseMetadata || courseMetadata.isEmpty) {
             val url = config.contentBasePath + config.contentReadApi + "/" + courseId + "?fields=name,targetTaxonomyCategory4Ids,targetTaxonomyCategory5Ids"
             val response = getAPICall(url, "content")(config, httpUtil, metrics)
+          logger.info("printing contentReadApi :: "+response)
           StringContext.processEscapes(response.getOrElse(config.name,"").asInstanceOf[String]).filter(_ >= ' ')
           val competencyName  = response.getOrElse("targetTaxonomyCategory4Ids", List.empty[String]).asInstanceOf[List[String]]
           val CompetencyLevel = response.getOrElse("targetTaxonomyCategory5Ids", List.empty[String]).asInstanceOf[List[String]]
