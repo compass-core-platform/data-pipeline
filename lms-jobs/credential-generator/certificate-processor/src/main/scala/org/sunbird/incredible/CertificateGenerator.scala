@@ -2,9 +2,9 @@ package org.sunbird.incredible
 
 import java.io.{File, IOException}
 import java.net.{URI, URISyntaxException}
-
 import org.apache.commons.lang.StringUtils
 import org.slf4j.{Logger, LoggerFactory}
+import org.sunbird.incredible.CertificateFactory.logger
 import org.sunbird.incredible.pojos.exceptions.InvalidDateFormatException
 import org.sunbird.incredible.pojos.ob.CertificateExtension
 import org.sunbird.incredible.processor.CertModel
@@ -21,7 +21,9 @@ class CertificateGenerator(implicit certificateConfig: CertificateConfig) {
   @throws[SignatureException.CreationException]
   @throws[IOException]
   def getCertificateExtension(certModel: CertModel): CertificateExtension = {
+    logger.info("inside getCertificateExtension function certModel " +certModel)
     val certificateExtension = CertificateFactory.createCertificate(certModel)
+    logger.info("inside getCertificateExtension function " +certificateExtension)
     certificateExtension
   }
 

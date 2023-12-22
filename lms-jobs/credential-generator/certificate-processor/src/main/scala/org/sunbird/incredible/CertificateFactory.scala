@@ -19,6 +19,7 @@ object CertificateFactory {
   mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
 
   def createCertificate(certModel: CertModel)(implicit certificateConfig: CertificateConfig): CertificateExtension = {
+    logger.info("inside createCertificate function " +certModel)
     val basePath = getDomainUrl(certificateConfig.basePath, certModel.tag)
     val uuid: String = basePath + "/" + UUID.randomUUID.toString
 

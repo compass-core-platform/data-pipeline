@@ -2,8 +2,8 @@ package org.sunbird.job.certgen.functions
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-
 import org.apache.commons.lang3.StringUtils
+import org.slf4j.LoggerFactory
 import org.sunbird.incredible.pojos.ob.{Criteria, Issuer, SignatoryExtension}
 import org.sunbird.incredible.pojos.valuator.{ExpiryDateValuator, IssuedDateValuator}
 import org.sunbird.incredible.processor.CertModel
@@ -15,7 +15,10 @@ import scala.collection.JavaConverters._
 
 class CertMapper(certConfig: CertificateConfig) {
 
+  private[this] val logger = LoggerFactory.getLogger(classOf[CertMapper])
+
   def mapReqToCertModel(certReq: Event): List[CertModel] = {
+    logger.info("inside mapReqToCertModel "+certReq)
     val dataList: List[Map[String, AnyRef]] = certReq.data
     val signatoryArr = getSignatoryArray(certReq.signatoryList)
     val issuedDate = new IssuedDateValuator().evaluates(if (StringUtils.isBlank(certReq.issuedDate)) getCurrentDate else certReq.issuedDate)
