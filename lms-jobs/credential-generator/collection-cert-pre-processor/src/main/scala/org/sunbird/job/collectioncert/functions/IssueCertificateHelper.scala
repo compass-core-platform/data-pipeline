@@ -190,9 +190,11 @@ trait IssueCertificateHelper {
 
     def getCourseName(courseId: String)(metrics:Metrics, config:CollectionCertPreProcessorConfig, cache:DataCache, httpUtil: HttpUtil): Map[String,Any] = {
         val courseMetadata = cache.getWithRetry(courseId)
-        if(null == courseMetadata || courseMetadata.isEmpty) {
-            val url = config.contentBasePath + config.contentReadApi + "/" + courseId + "?fields=name,targetTaxonomyCategory4Ids,targetTaxonomyCategory5Ids"
-            val response = getAPICall(url, "content")(config, httpUtil, metrics)
+      val url = config.contentBasePath + config.contentReadApi + "/" + courseId + "?fields=name,targetTaxonomyCategory4Ids,targetTaxonomyCategory5Ids"
+      val response = getAPICall(url, "content")(config, httpUtil, metrics)
+      if(null == courseMetadata || courseMetadata.isEmpty) {
+//            val url = config.contentBasePath + config.contentReadApi + "/" + courseId + "?fields=name,targetTaxonomyCategory4Ids,targetTaxonomyCategory5Ids"
+//            val response = getAPICall(url, "content")(config, httpUtil, metrics)
           logger.info("printing contentReadApi :: "+response)
           //StringContext.processEscapes(response.getOrElse(config.name,"").asInstanceOf[String]).filter(_ >= ' ')
           val courseName = StringContext.processEscapes(response.getOrElse(config.name, "").asInstanceOf[String]).filter(_ >= ' ')
@@ -203,9 +205,9 @@ trait IssueCertificateHelper {
         } else {
 //            StringContext.processEscapes(courseMetadata.getOrElse(config.name, "").asInstanceOf[String]).filter(_ >= ' ')
           val name = StringContext.processEscapes(courseMetadata.getOrElse("name", "").asInstanceOf[String]).filter(_ >= ' ')
-          val competencyName = courseMetadata.getOrElse("targetTaxonomyCategory4Ids", List.empty[String]).asInstanceOf[List[String]]
-          val competencyLevel = courseMetadata.getOrElse("targetTaxonomyCategory5Ids", List.empty[String]).asInstanceOf[List[String]]
-          Map("name" -> name, "competencyName" -> competencyName, "compentencyLevel" -> competencyLevel)
+          val competencyName = response.getOrElse("targetTaxonomyCategory4Ids", List.empty[String]).asInstanceOf[List[String]]
+          val CompetencyLevel = response.getOrElse("targetTaxonomyCategory5Ids", List.empty[String]).asInstanceOf[List[String]]
+          Map("name" -> name, "competencyName" -> competencyName, "compentencyLevel" -> CompetencyLevel)
 
         }
     }
