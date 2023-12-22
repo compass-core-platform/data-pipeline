@@ -326,6 +326,7 @@ collection-cert-pre-processor:
     cert_domain_url = "{{ cert_domain_url }}"
     user_read_api = "/private/user/v1/read"
     content_read_api = "/content/v3/read"
+    term_read_api = "framework/v1/term/read"
     service {
       content.basePath = "{{ content_service_base_url }}"
       learner.basePath = "http://learner-service.dev.svc.cluster.local:9000"
