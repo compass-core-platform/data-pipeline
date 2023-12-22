@@ -194,11 +194,12 @@ trait IssueCertificateHelper {
             val url = config.contentBasePath + config.contentReadApi + "/" + courseId + "?fields=name,targetTaxonomyCategory4Ids,targetTaxonomyCategory5Ids"
             val response = getAPICall(url, "content")(config, httpUtil, metrics)
           logger.info("printing contentReadApi :: "+response)
-          StringContext.processEscapes(response.getOrElse(config.name,"").asInstanceOf[String]).filter(_ >= ' ')
+          //StringContext.processEscapes(response.getOrElse(config.name,"").asInstanceOf[String]).filter(_ >= ' ')
+          val courseName = StringContext.processEscapes(response.getOrElse(config.name, "").asInstanceOf[String]).filter(_ >= ' ')
           val competencyName  = response.getOrElse("targetTaxonomyCategory4Ids", List.empty[String]).asInstanceOf[List[String]]
           val CompetencyLevel = response.getOrElse("targetTaxonomyCategory5Ids", List.empty[String]).asInstanceOf[List[String]]
 
-          Map("name" -> response, "competencyName" -> competencyName, "compentencyLevel" -> CompetencyLevel)
+          Map("name" -> courseName, "competencyName" -> competencyName, "compentencyLevel" -> CompetencyLevel)
         } else {
 //            StringContext.processEscapes(courseMetadata.getOrElse(config.name, "").asInstanceOf[String]).filter(_ >= ' ')
           val name = StringContext.processEscapes(courseMetadata.getOrElse("name", "").asInstanceOf[String]).filter(_ >= ' ')
