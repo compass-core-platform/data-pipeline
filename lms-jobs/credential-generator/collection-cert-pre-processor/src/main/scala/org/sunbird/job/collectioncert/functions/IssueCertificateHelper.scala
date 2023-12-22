@@ -188,16 +188,36 @@ trait IssueCertificateHelper {
         }
     }
 
-    def getCourseName(courseId: String)(metrics:Metrics, config:CollectionCertPreProcessorConfig, cache:DataCache, httpUtil: HttpUtil): String = {
+    def getCourseName(courseId: String)(metrics:Metrics, config:CollectionCertPreProcessorConfig, cache:DataCache, httpUtil: HttpUtil): Map[String,Any] = {
         val courseMetadata = cache.getWithRetry(courseId)
         if(null == courseMetadata || courseMetadata.isEmpty) {
-            val url = config.contentBasePath + config.contentReadApi + "/" + courseId + "?fields=name"
+            val url = config.contentBasePath + config.contentReadApi + "/" + courseId + "?fields=name,targetTaxonomyCategory4Ids,targetTaxonomyCategory5Ids"
             val response = getAPICall(url, "content")(config, httpUtil, metrics)
-            StringContext.processEscapes(response.getOrElse(config.name, "").asInstanceOf[String]).filter(_ >= ' ')
+          StringContext.processEscapes(response.getOrElse(config.name,"").asInstanceOf[String]).filter(_ >= ' ')
+          val competencyName  = response.getOrElse("targetTaxonomyCategory4Ids", List.empty[String]).asInstanceOf[List[String]]
+          val CompetencyLevel = response.getOrElse("targetTaxonomyCategory5Ids", List.empty[String]).asInstanceOf[List[String]]
+
+          Map("name" -> response, "competencyName" -> competencyName, "compentencyLevel" -> CompetencyLevel)
         } else {
-            StringContext.processEscapes(courseMetadata.getOrElse(config.name, "").asInstanceOf[String]).filter(_ >= ' ')
+//            StringContext.processEscapes(courseMetadata.getOrElse(config.name, "").asInstanceOf[String]).filter(_ >= ' ')
+          val name = StringContext.processEscapes(courseMetadata.getOrElse("name", "").asInstanceOf[String]).filter(_ >= ' ')
+          val competencyName = courseMetadata.getOrElse("targetTaxonomyCategory4Ids", List.empty[String]).asInstanceOf[List[String]]
+          val competencyLevel = courseMetadata.getOrElse("targetTaxonomyCategory5Ids", List.empty[String]).asInstanceOf[List[String]]
+          Map("name" -> name, "competencyName" -> competencyName, "compentencyLevel" -> competencyLevel)
+
         }
     }
+
+  def getCompetencyName(category: String,framework: String,term: String)(metrics: Metrics, config: CollectionCertPreProcessorConfig, cache: DataCache, httpUtil: HttpUtil): String = {
+    val competencyMetadata = cache.getWithRetry(category)
+    if (null == competencyMetadata || competencyMetadata.isEmpty) {
+      val url = "https://compass-dev.tarento.com/api/" + config.termReadApi + "/"+"term?framework=framework&category=category"
+      val response = getAPICall(url, "competencies_b")(config, httpUtil, metrics)
+      StringContext.processEscapes(response.getOrElse("name", "").asInstanceOf[String]).filter(_ >= ' ')
+    } else {
+      StringContext.processEscapes(competencyMetadata.getOrElse("name", "").asInstanceOf[String]).filter(_ >= ' ')
+    }
+  }
 
     def generateCertificateEvent(event: Event, template: Map[String, String], userDetails: Map[String, AnyRef], enrolledUser: EnrolledUser, assessedUser: AssessedUser, additionalProps: Map[String, List[String]], certName: String)(metrics:Metrics, config:CollectionCertPreProcessorConfig, cache:DataCache, httpUtil: HttpUtil): String = {
         val firstName = Option(userDetails.getOrElse("firstName", "").asInstanceOf[String]).getOrElse("")
@@ -208,7 +228,14 @@ trait IssueCertificateHelper {
         }
 
         val recipientName = nullStringCheck(firstName).concat(" ").concat(nullStringCheck(lastName)).trim
-        val courseName = getCourseName(event.courseId)(metrics, config, cache, httpUtil)
+       // val courseName = getCourseName(event.courseId)(metrics, config, cache, httpUtil)
+        val courseData = getCourseName(event.courseId)(metrics, config, cache, httpUtil)
+        val courseName = courseData.getOrElse("name", "").asInstanceOf[String].filter(_ >= ' ')
+//        val competencyName = courseData.getOrElse("competency", List.empty[String]).asInstanceOf[List[String]]
+//        val competencyLevel = courseData.getOrElse("competencyLevel", List.empty[String]).asInstanceOf[List[String]]
+      val competencyName = courseData.getOrElse("competency", List.empty[String]).asInstanceOf[List[String]].headOption.getOrElse("")
+      val competencyLevel = courseData.getOrElse("competencyLevel", List.empty[String]).asInstanceOf[List[String]].headOption.getOrElse("")
+      logger.info("printing courseName:: and competencyName:: and competencyLevel:: " +courseName + " || " + competencyName + " || " +competencyLevel)
         val dateFormatter = new SimpleDateFormat("yyyy-MM-dd")
         val related = getRelatedData(event, enrolledUser, assessedUser, userDetails, additionalProps, certName, courseName)(config)
         val eData = Map[String, AnyRef] (
