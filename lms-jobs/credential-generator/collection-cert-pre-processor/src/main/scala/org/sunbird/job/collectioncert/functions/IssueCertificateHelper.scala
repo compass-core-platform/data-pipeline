@@ -231,10 +231,13 @@ trait IssueCertificateHelper {
        // val courseName = getCourseName(event.courseId)(metrics, config, cache, httpUtil)
         val courseData = getCourseName(event.courseId)(metrics, config, cache, httpUtil)
         val courseName = courseData.getOrElse("name", "").asInstanceOf[String].filter(_ >= ' ')
+        logger.info("printing courseDAta "+courseData)
 //        val competencyName = courseData.getOrElse("competency", List.empty[String]).asInstanceOf[List[String]]
 //        val competencyLevel = courseData.getOrElse("competencyLevel", List.empty[String]).asInstanceOf[List[String]]
-      val competencyName = courseData.getOrElse("competency", List.empty[String]).asInstanceOf[List[String]].headOption.getOrElse("")
-      val competencyLevel = courseData.getOrElse("competencyLevel", List.empty[String]).asInstanceOf[List[String]].headOption.getOrElse("")
+      val competencyName = courseData.getOrElse("competencyName", List.empty[String]).asInstanceOf[List[String]].headOption.getOrElse("")
+      val competencyLevel = courseData.getOrElse("compentencyLevel", List.empty[String]).asInstanceOf[List[String]].headOption.getOrElse("")
+      logger.info("printing competencyName "+competencyName)
+      logger.info("printing competencyLevel "+competencyLevel)
       logger.info("printing courseName:: and competencyName:: and competencyLevel:: " +courseName + " || " + competencyName + " || " +competencyLevel)
         val dateFormatter = new SimpleDateFormat("yyyy-MM-dd")
         val related = getRelatedData(event, enrolledUser, assessedUser, userDetails, additionalProps, certName, courseName)(config)
