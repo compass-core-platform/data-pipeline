@@ -174,7 +174,7 @@ trait IssueCertificateHelper {
     }
 
     def getAPICall(url: String, responseParam: String)(config:CollectionCertPreProcessorConfig, httpUtil: HttpUtil, metrics: Metrics): Map[String,AnyRef] = {
-        val response = httpUtil.get(url, config.defaultHeaders)
+      val response = httpUtil.get(url, config.defaultHeaders)
         if(200 == response.status) {
             ScalaJsonUtil.deserialize[Map[String, AnyRef]](response.body)
               .getOrElse("result", Map[String, AnyRef]()).asInstanceOf[Map[String, AnyRef]]
@@ -187,6 +187,23 @@ trait IssueCertificateHelper {
             throw new Exception(s"Error from get API : $url, with response: $response")
         }
     }
+
+  def getAPICall(url: String, responseParam: String, headers: Map[String, String] = Map.empty)(config: CollectionCertPreProcessorConfig, httpUtil: HttpUtil, metrics: Metrics): Map[String, AnyRef] = {
+    val allHeaders = config.defaultHeaders ++ headers
+    val response = httpUtil.get(url, allHeaders)
+   // val response = httpUtil.get(url, config.defaultHeaders)
+    if (200 == response.status) {
+      ScalaJsonUtil.deserialize[Map[String, AnyRef]](response.body)
+        .getOrElse("result", Map[String, AnyRef]()).asInstanceOf[Map[String, AnyRef]]
+        .getOrElse(responseParam, Map[String, AnyRef]()).asInstanceOf[Map[String, AnyRef]]
+    } else if (400 == response.status && response.body.contains(config.userAccBlockedErrCode)) {
+      metrics.incCounter(config.skippedEventCount)
+      logger.error(s"Error while fetching user details for ${url}: " + response.status + " :: " + response.body)
+      Map[String, AnyRef]()
+    } else {
+      throw new Exception(s"Error from get API : $url, with response: $response")
+    }
+  }
 
     def getCourseName(courseId: String)(metrics:Metrics, config:CollectionCertPreProcessorConfig, cache:DataCache, httpUtil: HttpUtil): Map[String,Any] = {
         val courseMetadata = cache.getWithRetry(courseId)
@@ -216,7 +233,9 @@ trait IssueCertificateHelper {
     val competencyMetadata = cache.getWithRetry(category)
     if (null == competencyMetadata || competencyMetadata.isEmpty) {
       val url = "https://compass-dev.tarento.com/api/" + config.termReadApi + "/"+"term?framework=framework&category=category"
-      val response = getAPICall(url, "competencies_b")(config, httpUtil, metrics)
+      val authorizationHeader = s"Bearer ${config.accessToken}"
+      val headers = Map("Authorization" -> authorizationHeader)
+      val response = getAPICall(url, "term",headers)(config, httpUtil, metrics)
       StringContext.processEscapes(response.getOrElse("name", "").asInstanceOf[String]).filter(_ >= ' ')
     } else {
       StringContext.processEscapes(competencyMetadata.getOrElse("name", "").asInstanceOf[String]).filter(_ >= ' ')
@@ -252,12 +271,15 @@ trait IssueCertificateHelper {
       logger.info(s"Printing competency details: $framework")
       logger.info(s"Printing competency details category : $category")
       logger.info(s"Printing competency details term : $term")
+      val name = fetchTermDetails(category,framework, term)(metrics, config, cache, httpUtil)
+      logger.info("printing fetchTermDetails for compentencyDetails "+name)
 
       val (frameworkCompetencyLevel, categoryCompetencyLevel, termCompetencyLevel) = parseCompetencyString(competencyLevel)
       logger.info(s"Printing competencyLevel details: $frameworkCompetencyLevel, $categoryCompetencyLevel, $termCompetencyLevel")
       logger.info(s"Printing competencyLevel details category: $categoryCompetencyLevel")
       logger.info(s"Printing competencyLevel details term: $termCompetencyLevel")
-
+      val level = fetchTermDetails(frameworkCompetencyLevel,categoryCompetencyLevel, termCompetencyLevel)(metrics, config, cache, httpUtil)
+      logger.info("printing fetchTermDetails for compentencyDetails "+level)
 
       val dateFormatter = new SimpleDateFormat("yyyy-MM-dd")
         val related = getRelatedData(event, enrolledUser, assessedUser, userDetails, additionalProps, certName, courseName)(config)
