@@ -232,7 +232,8 @@ trait IssueCertificateHelper {
   def fetchTermDetails(category: String,framework: String,term: String)(metrics: Metrics, config: CollectionCertPreProcessorConfig, cache: DataCache, httpUtil: HttpUtil): String = {
     val competencyMetadata = cache.getWithRetry(category)
     if (null == competencyMetadata || competencyMetadata.isEmpty) {
-      val url = "https://compass-dev.tarento.com/api/" + config.termReadApi + "/"+"term?framework=framework&category=category"
+//      val url = "https://compass-dev.tarento.com/api/" + config.termReadApi + "/"+term+"?framework="+framework"&+category="+category"
+      val url = s"https://compass-dev.tarento.com/api/${config.termReadApi}/$term?framework=$framework&category=$category"
       val authorizationHeader = s"Bearer ${config.accessToken}"
       val headers = Map("Authorization" -> authorizationHeader)
       val response = getAPICall(url, "term",headers)(config, httpUtil, metrics)
