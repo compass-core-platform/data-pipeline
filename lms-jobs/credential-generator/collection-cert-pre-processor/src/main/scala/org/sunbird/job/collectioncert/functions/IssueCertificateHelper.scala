@@ -300,8 +300,8 @@ trait IssueCertificateHelper {
     }
 
   def parseCompetencyString(inputString: String): (String, String, String) = {
-   // val pattern = """(\w+)_([a-zA-Z]+)_(.+)""".r
-   val pattern = """(\w+)_([a-zA-Z]+\d*)_(.+)""".r
+   //val pattern = """(\w+)_([a-zA-Z]+\d*)_(.+)""".r
+   val pattern = """(\w+)_([a-zA-Z0-9_]+)_(.+)""".r
 
     inputString match {
       case pattern(framework, category, term) => (framework, category, term)
