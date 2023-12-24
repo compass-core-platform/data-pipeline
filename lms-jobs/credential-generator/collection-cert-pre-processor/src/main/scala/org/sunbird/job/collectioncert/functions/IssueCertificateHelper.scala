@@ -249,10 +249,14 @@ trait IssueCertificateHelper {
       logger.info("printing courseName:: and competencyName:: and competencyLevel:: " +courseName + " || " + competencyName + " || " +competencyLevel)
 
       val (framework, category, term) = parseCompetencyString(competencyName)
-      logger.info(s"Printing competency details: $framework, $category, $term")
+      logger.info(s"Printing competency details: $framework")
+      logger.info(s"Printing competency details category : $category")
+      logger.info(s"Printing competency details term : $term")
 
       val (frameworkCompetencyLevel, categoryCompetencyLevel, termCompetencyLevel) = parseCompetencyString(competencyLevel)
       logger.info(s"Printing competencyLevel details: $frameworkCompetencyLevel, $categoryCompetencyLevel, $termCompetencyLevel")
+      logger.info(s"Printing competencyLevel details category: $categoryCompetencyLevel")
+      logger.info(s"Printing competencyLevel details term: $termCompetencyLevel")
 
 
       val dateFormatter = new SimpleDateFormat("yyyy-MM-dd")
