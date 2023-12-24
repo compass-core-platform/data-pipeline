@@ -348,6 +348,7 @@ collection-cert-pre-processor:
     cloud_store_base_path_placeholder = "{{ cloud_store_base_path_placeholder | default('CLOUD_BASE_PATH')}}"
     content_cloud_storage_container = "{{ cloud_storage_content_bucketname }}"
     cloud_storage_cname_url = "{{ cloud_storage_cname_url }}"
+    api_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI0WEFsdFpGMFFhc1JDYlFnVXB4b2RvU2tLRUZyWmdpdCJ9.mXD7cSvv3Le6o_32lJplDck2D0IIMHnv0uJKq98YVwk"
 
   flink-conf: |+
     jobmanager.memory.flink.size: {{ flink_job_names['collection-cert-pre-processor'].jobmanager_memory }}
