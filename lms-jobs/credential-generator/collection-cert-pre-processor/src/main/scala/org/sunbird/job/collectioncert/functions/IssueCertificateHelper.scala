@@ -212,7 +212,7 @@ trait IssueCertificateHelper {
         }
     }
 
-  def getCompetencyName(category: String,framework: String,term: String)(metrics: Metrics, config: CollectionCertPreProcessorConfig, cache: DataCache, httpUtil: HttpUtil): String = {
+  def fetchTermDetails(category: String,framework: String,term: String)(metrics: Metrics, config: CollectionCertPreProcessorConfig, cache: DataCache, httpUtil: HttpUtil): String = {
     val competencyMetadata = cache.getWithRetry(category)
     if (null == competencyMetadata || competencyMetadata.isEmpty) {
       val url = "https://compass-dev.tarento.com/api/" + config.termReadApi + "/"+"term?framework=framework&category=category"
@@ -247,7 +247,15 @@ trait IssueCertificateHelper {
       logger.info("printing competencyName "+competencyName)
       logger.info("printing competencyLevel "+competencyLevel)
       logger.info("printing courseName:: and competencyName:: and competencyLevel:: " +courseName + " || " + competencyName + " || " +competencyLevel)
-        val dateFormatter = new SimpleDateFormat("yyyy-MM-dd")
+
+      val (framework, category, term) = parseCompetencyString(competencyName)
+      logger.info(s"Printing competency details: $framework, $category, $term")
+
+      val (frameworkCompetencyLevel, categoryCompetencyLevel, termCompetencyLevel) = parseCompetencyString(competencyLevel)
+      logger.info(s"Printing competencyLevel details: $frameworkCompetencyLevel, $categoryCompetencyLevel, $termCompetencyLevel")
+
+
+      val dateFormatter = new SimpleDateFormat("yyyy-MM-dd")
         val related = getRelatedData(event, enrolledUser, assessedUser, userDetails, additionalProps, certName, courseName)(config)
         val eData = Map[String, AnyRef] (
                 "issuedDate" -> dateFormatter.format(enrolledUser.issuedOn),
@@ -286,4 +294,13 @@ trait IssueCertificateHelper {
         Map[String, Any]("batchId" -> event.batchId, "courseId" -> event.courseId, "type" -> certName) ++
           locationProps ++ enrolledUser.additionalProps ++ assessedUser.additionalProps ++ userAdditionalProps ++ courseAdditionalProps
     }
+
+  def parseCompetencyString(inputString: String): (String, String, String) = {
+    val pattern = """(\w+)_([a-zA-Z]+)_(.+)""".r
+
+    inputString match {
+      case pattern(framework, category, term) => (framework, category, term)
+      case _ => ("", "", "")
+    }
+  }
 }
