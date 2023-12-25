@@ -87,9 +87,11 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
   def generateCertificate(event: Event, context: KeyedProcessFunction[String, Event, String]#Context)(implicit metrics: Metrics): Unit = {
     val certModelList: List[CertModel] = new CertMapper(certificateConfig).mapReqToCertModel(event)
     val certificateGenerator = new CertificateGenerator
+    logger.info("certModelList: " + certModelList)
     certModelList.foreach(certModel => {
       var uuid: String = null
       try {
+        logger.info("certModel generateCertificate: " + certModel)
         val certificateExtension: CertificateExtension = certificateGenerator.getCertificateExtension(certModel)
         uuid = certificateGenerator.getUUID(certificateExtension)
         val qrMap = certificateGenerator.generateQrCode(uuid, directory, certificateConfig.basePath)

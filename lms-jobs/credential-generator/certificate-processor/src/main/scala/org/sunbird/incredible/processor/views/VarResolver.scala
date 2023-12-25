@@ -17,6 +17,8 @@ class VarResolver(certificateExtension: CertificateExtension) {
 
   def getRecipientName: String = certificateExtension.recipient.name
 
+  def getcompetencyName: String = certificateExtension.competencyName
+
   def getRecipientId: String = certificateExtension.recipient.identity
 
   def getCourseName: String = if (certificateExtension.evidence.nonEmpty && StringUtils.isNotBlank(certificateExtension.evidence.get.name)) certificateExtension.evidence.get.name
@@ -84,6 +86,7 @@ class VarResolver(certificateExtension: CertificateExtension) {
         put(JsonKeys.SIGNATORY_1_DESIGNATION, urlEncode(getSignatory1Designation))
         put(JsonKeys.EXPIRY_DATE, urlEncode(getExpiryDate))
         put(JsonKeys.ISSUER_NAME, urlEncode(getIssuerName))
+        put(JsonKeys.COMPETENCYNAME, urlEncode(getcompetencyName))
       }
     }
     metaData
