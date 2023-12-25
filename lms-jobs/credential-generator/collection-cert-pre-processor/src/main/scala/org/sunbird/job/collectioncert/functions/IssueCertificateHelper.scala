@@ -323,13 +323,15 @@ trait IssueCertificateHelper {
     }
 
   def parseCompetencyString(inputString: String): (String, String, String) = {
-   //val pattern = """(\w+)_([a-zA-Z]+\d*)_(.+)""".r
-   //val pattern = """(\w+)_([a-zA-Z0-9_]+)_(.+)""".r
-    val pattern = """([a-z_]+)_([a-zA-Z0-9_]+)_([a-f0-9-]+)""".r
-
+    // Define a regular expression pattern
+    val pattern = """([^_]+_[^_]+)_([a-zA-Z_]+)([^_].+)""".r
 
     inputString match {
-      case pattern(framework, category, term) => (framework, category, term)
+      case pattern(framework, category, term) =>
+        val firstChar = term.charAt(0)
+        val newCategory = category + firstChar
+        val newTerm = term.substring(2)
+        (framework, newCategory, newTerm)
       case _ => ("", "", "")
     }
   }
