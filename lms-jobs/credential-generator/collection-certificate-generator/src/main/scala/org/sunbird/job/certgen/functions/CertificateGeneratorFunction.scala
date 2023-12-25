@@ -103,7 +103,8 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
           JsonKeys.ID -> uuid, JsonKeys.JSON_URL -> certificateConfig.basePath.concat(jsonUrl),
           JsonKeys.JSON_DATA -> certificateExtension, JsonKeys.ACCESS_CODE -> qrMap.accessCode,
           JsonKeys.RECIPIENT_NAME -> certModel.recipientName, JsonKeys.RECIPIENT_ID -> certModel.identifier,
-          config.RELATED -> event.related
+          config.RELATED -> event.related,
+          JsonKeys.COMPETENCYNAME ->  certModel.competencyName
         ) ++ {if (event.oldId.nonEmpty) Map[String, AnyRef](config.OLD_ID -> event.oldId) else Map[String, AnyRef]()}})
         addCertToRegistry(event, addReq, context)(metrics)
         //cert-registry end

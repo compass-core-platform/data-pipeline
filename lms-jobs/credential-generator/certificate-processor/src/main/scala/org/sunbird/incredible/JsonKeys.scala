@@ -113,4 +113,5 @@ object JsonKeys {
   val ISSUER_NAME: String = "issuerName"
   val EDATA = "edata"
   val STATE_IMAGE_URL = "stateImageUrl"
+  val COMPETENCYNAME = "competencyName"
 }
