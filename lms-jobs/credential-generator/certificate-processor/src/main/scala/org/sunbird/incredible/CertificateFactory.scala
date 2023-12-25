@@ -49,7 +49,9 @@ object CertificateFactory {
       issuedOn = certModel.issuedDate,
       expires = certModel.expiry.orNull,
       validFrom = certModel.validFrom.orNull,
-      signatory = certModel.signatoryList)
+      signatory = certModel.signatoryList,
+      competencyName = certModel.competencyName
+    )
     if (StringUtils.isNotEmpty(certModel.courseName)) {
       val trainingEvidence: TrainingEvidence = TrainingEvidence(certificateConfig.contextUrl,
         id = certificateConfig.evidenceUrl,
