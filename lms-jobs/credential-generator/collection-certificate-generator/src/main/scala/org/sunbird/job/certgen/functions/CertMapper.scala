@@ -20,6 +20,7 @@ class CertMapper(certConfig: CertificateConfig) {
   def mapReqToCertModel(certReq: Event): List[CertModel] = {
     logger.info("inside mapReqToCertModel "+certReq)
     val dataList: List[Map[String, AnyRef]] = certReq.data
+    logger.info("inside mapReqToCertModel dataList"+dataList)
     val signatoryArr = getSignatoryArray(certReq.signatoryList)
     val issuedDate = new IssuedDateValuator().evaluates(if (StringUtils.isBlank(certReq.issuedDate)) getCurrentDate else certReq.issuedDate)
     val expiryDate: String = if (StringUtils.isNotBlank(certReq.expiryDate)) new ExpiryDateValuator(issuedDate).evaluates(certReq.expiryDate) else ""
