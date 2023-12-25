@@ -331,8 +331,17 @@ trait IssueCertificateHelper {
         val firstChar = term.charAt(0)
         val newCategory = category + firstChar
         val newTerm = term.substring(2)
-        (framework, newCategory, newTerm)
+        val updatedCategory = capitalizeNinthChar(newCategory)
+        (framework, updatedCategory, newTerm)
       case _ => ("", "", "")
+    }
+  }
+
+  def capitalizeNinthChar(s: String): String = {
+    if (s.length >= 9) {
+      s.patch(8, s.substring(8, 9).toUpperCase, 1)
+    } else {
+      s
     }
   }
 }
