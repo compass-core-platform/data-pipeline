@@ -264,22 +264,14 @@ trait IssueCertificateHelper {
 //        val competencyLevel = courseData.getOrElse("competencyLevel", List.empty[String]).asInstanceOf[List[String]]
       val competencyName = courseData.getOrElse("competencyName", List.empty[String]).asInstanceOf[List[String]].headOption.getOrElse("")
       val competencyLevel = courseData.getOrElse("compentencyLevel", List.empty[String]).asInstanceOf[List[String]].headOption.getOrElse("")
-      logger.info("printing competencyName "+competencyName)
-      logger.info("printing competencyLevel "+competencyLevel)
       logger.info("printing courseName:: and competencyName:: and competencyLevel:: " +courseName + " || " + competencyName + " || " +competencyLevel)
 
       val (framework, category, term) = parseCompetencyString(competencyName)
-      logger.info(s"Printing competency details: $framework")
-      logger.info(s"Printing competency details category : $category")
-      logger.info(s"Printing competency details term : $term")
       val name = fetchTermDetails(category,framework, term)(metrics, config, cache, httpUtil)
       logger.info("printing fetchTermDetails for compentencyDetails "+name)
 
       val (frameworkCompetencyLevel, categoryCompetencyLevel, termCompetencyLevel) = parseCompetencyString(competencyLevel)
-      logger.info(s"Printing competencyLevel details: $frameworkCompetencyLevel, $categoryCompetencyLevel, $termCompetencyLevel")
-      logger.info(s"Printing competencyLevel details category: $categoryCompetencyLevel")
-      logger.info(s"Printing competencyLevel details term: $termCompetencyLevel")
-      val level = fetchTermDetails(frameworkCompetencyLevel,categoryCompetencyLevel, termCompetencyLevel)(metrics, config, cache, httpUtil)
+      val level = fetchTermDetails(categoryCompetencyLevel,frameworkCompetencyLevel, termCompetencyLevel)(metrics, config, cache, httpUtil)
       logger.info("printing fetchTermDetails for compentencyDetails "+level)
 
       val dateFormatter = new SimpleDateFormat("yyyy-MM-dd")
@@ -299,7 +291,9 @@ trait IssueCertificateHelper {
                 "basePath" -> config.certBasePath,
                 "related" ->  related,
                 "name" -> certName,
-                "tag" -> event.batchId
+                "tag" -> event.batchId,
+                "competencyName" -> name,
+                "competencyLevel" -> level
             )
 
         logger.info("IssueCertificateHelper:: generateCertificateEvent:: eData:: " + eData)
