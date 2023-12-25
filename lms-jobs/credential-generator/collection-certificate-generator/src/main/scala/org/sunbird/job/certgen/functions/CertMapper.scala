@@ -19,6 +19,7 @@ class CertMapper(certConfig: CertificateConfig) {
 
   def mapReqToCertModel(certReq: Event): List[CertModel] = {
     logger.info("inside mapReqToCertModel "+certReq)
+    logger.info("inside mapReqToCertModel COMPETENCYNAME :"+certReq.competencyName)
     val dataList: List[Map[String, AnyRef]] = certReq.data
     logger.info("inside mapReqToCertModel dataList"+dataList)
     val signatoryArr = getSignatoryArray(certReq.signatoryList)
@@ -41,7 +42,7 @@ class CertMapper(certConfig: CertificateConfig) {
         keyId = certReq.keys.getOrElse(JsonKeys.ID, ""),
         tag = certReq.tag,
         expiry = Option.apply(expiryDate),
-        competencyName = (data.getOrElse(JsonKeys.COMPETENCYNAME, "").asInstanceOf[String])
+        competencyName = certReq.competencyName
       )
       certModel
     }).toList
