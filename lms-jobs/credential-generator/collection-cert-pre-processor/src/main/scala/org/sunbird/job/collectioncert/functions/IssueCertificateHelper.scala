@@ -248,7 +248,7 @@ trait IssueCertificateHelper {
     def generateCertificateEvent(event: Event, template: Map[String, String], userDetails: Map[String, AnyRef], enrolledUser: EnrolledUser, assessedUser: AssessedUser, additionalProps: Map[String, List[String]], certName: String)(metrics:Metrics, config:CollectionCertPreProcessorConfig, cache:DataCache, httpUtil: HttpUtil): String = {
         val firstName = Option(userDetails.getOrElse("firstName", "").asInstanceOf[String]).getOrElse("")
         val lastName = Option(userDetails.getOrElse("lastName", "").asInstanceOf[String]).getOrElse("")
-
+        logger.info("printing score from generateCertificateEvent "+event.score)
         def nullStringCheck(name: String): String = {
             if (StringUtils.equalsIgnoreCase("null", name)) "" else name
         }

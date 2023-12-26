@@ -10,7 +10,7 @@ class Event(eventMap: java.util.Map[String, Any], partition: Int, offset: Long) 
     def batchId: String = readOrDefault[String]("edata.batchId", "")
 
     def courseId: String = readOrDefault[String]("edata.courseId", "")
-
+    def score: String = readOrDefault[String]("edata.score", "")
     def userId: String = {
         val list = readOrDefault[List[String]]("edata.userIds", List[String]())
         if(list.isEmpty) "" else list.head
