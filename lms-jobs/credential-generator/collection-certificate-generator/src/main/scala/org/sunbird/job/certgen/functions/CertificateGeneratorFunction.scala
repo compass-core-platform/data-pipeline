@@ -18,7 +18,7 @@ import org.sunbird.job.certgen.domain._
 import org.sunbird.job.certgen.exceptions.ServerException
 import org.sunbird.job.certgen.task.CertificateGeneratorConfig
 import org.sunbird.job.exception.InvalidEventException
-import org.sunbird.job.util.{CassandraUtil, ElasticSearchUtil, HttpUtil, ScalaJsonUtil}
+import org.sunbird.job.util.{CassandraUtil, ElasticSearchUtil, HttpUtil, JSONUtil, Neo4JUtil, ScalaJsonUtil}
 import org.sunbird.job.{BaseProcessKeyedFunction, Metrics}
 
 import java.io.{File, IOException}
@@ -32,6 +32,7 @@ import scala.collection.JavaConverters._
 class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil: HttpUtil, storageService: StorageService, @transient var cassandraUtil: CassandraUtil = null)
   extends BaseProcessKeyedFunction[String, Event, String](config) {
 
+  val CONTENTSTATEREADAPIPath = config.getString("service.lms.basepath","") + "/private/v1/content/state/read"
 
   private[this] val logger = LoggerFactory.getLogger(classOf[CertificateGeneratorFunction])
   val mapType: Type = new TypeToken[java.util.Map[String, AnyRef]]() {}.getType
@@ -121,8 +122,12 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
         addCertToRegistry(event, addReq, context)(metrics)
         //cert-registry end
         //Add an assessment for a user record assessment data for a specific user in the Passbook system.
-
-
+        val scoreOption = fetchContentState(uuid, event,context)(metrics)
+        val totalScore: Double = scoreOption match {
+          case Some(score) => score
+          case None => 0.0
+        }
+        logger.info("printing totalscore from generateCertificate" +totalScore)
         val related = event.related
         val userEnrollmentData = UserEnrollmentData(related.getOrElse(config.BATCH_ID, "").asInstanceOf[String], certModel.identifier,
           related.getOrElse(config.COURSE_ID, "").asInstanceOf[String], event.courseName, event.templateId,
@@ -133,6 +138,58 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
         cleanUp(uuid, directory)
       }
     })
+  }
+  def fetchContentState(uuid: String, event: Event, context: KeyedProcessFunction[String, Event, String]#Context)(implicit metrics: Metrics): Option[Double] = {
+    logger.info("content state read for this batch:" + event.batchId + ", courseId: " + event.courseId)
+    try {
+      if (event.batchId != null && event.courseId != null && event.userId != null) {
+        val CONTENTSTATEREADREQUESTBODY: Map[String, Any] = Map(
+          "request" -> Map(
+            "userId" -> event.userId,
+            "courseId" -> event.courseId,
+            "batchId" -> event.batchId,
+          ),
+          "fields" -> List("score")
+        )
+        logger.info("content state read request body"+CONTENTSTATEREADREQUESTBODY)
+        val httpRequest = JSONUtil.serialize(CONTENTSTATEREADREQUESTBODY)
+        logger.info("content state read request -> " + httpRequest)
+
+        val httpResponse = httpUtil.post(CONTENTSTATEREADAPIPath, httpRequest)
+
+        if (httpResponse.status == 200) {
+          logger.info("Successfully received HTTP response with status: " + httpResponse.status)
+          logger.info("HTTP response body: " + httpResponse.body)
+
+          val contentStateResponse: Map[String, Any] = JSONUtil.deserialize[Map[String, Any]](httpResponse.body)
+
+          // Extracting the latest totalScore
+          val latestTotalScore: Option[Double] = contentStateResponse.get("result").flatMap { result =>
+            result.asInstanceOf[Map[String, Any]].get("contentList").flatMap { contentList =>
+              contentList.asInstanceOf[List[Map[String, Any]]].headOption.flatMap { firstContent =>
+                firstContent.get("score").flatMap { scoreList =>
+                  scoreList.asInstanceOf[List[Map[String, Any]]].sortBy(_.getOrElse("lastAttemptedOn", 0L).asInstanceOf[Long]).lastOption.flatMap { latestScore =>
+                    latestScore.get("totalScore").map(_.asInstanceOf[Double])
+                  }
+                }
+              }
+            }
+          }
+          logger.info("Latest Total Score: " + latestTotalScore.getOrElse("No Score Available"))
+          latestTotalScore
+        } else {
+          logger.error("Failed to get content state read status: " + httpResponse.status + " :: " + httpResponse.body)
+          throw new Exception("Failed to get content state read" + event.courseId + ", BatchId: " + event.batchId)
+        }
+      } else {
+        logger.error("Failed to read content for this course id: " + event.courseId)
+        None
+      }
+    } catch {
+      case ex: Exception =>
+        logger.error("Exception occurred: " + ex.getMessage)
+        None
+    }
   }
 
   @throws[Exception]
