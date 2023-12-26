@@ -88,6 +88,7 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
     val certModelList: List[CertModel] = new CertMapper(certificateConfig).mapReqToCertModel(event)
     val certificateGenerator = new CertificateGenerator
     logger.info("certModelList: " + certModelList)
+    logger.info("generateCertificate event: " + event)
     certModelList.foreach(certModel => {
       var uuid: String = null
       try {
@@ -110,6 +111,9 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
         ) ++ {if (event.oldId.nonEmpty) Map[String, AnyRef](config.OLD_ID -> event.oldId) else Map[String, AnyRef]()}})
         addCertToRegistry(event, addReq, context)(metrics)
         //cert-registry end
+        //Add an assessment for a user record assessment data for a specific user in the Passbook system.
+
+
         val related = event.related
         val userEnrollmentData = UserEnrollmentData(related.getOrElse(config.BATCH_ID, "").asInstanceOf[String], certModel.identifier,
           related.getOrElse(config.COURSE_ID, "").asInstanceOf[String], event.courseName, event.templateId,
