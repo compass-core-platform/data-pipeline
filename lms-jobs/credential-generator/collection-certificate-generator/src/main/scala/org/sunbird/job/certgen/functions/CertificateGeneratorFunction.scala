@@ -101,6 +101,9 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
         val printUri = SvgGenerator.generate(certificateExtension, encodedQrCode, event.svgTemplate)
         certificateExtension.printUri = Option(printUri)
         val jsonUrl = uploadJson(certificateExtension, directory.concat(uuid).concat(".json"), event.tag.concat("/"))
+        logger.info("printing requried body for api user assessment :" + event.competencyName,
+          ":: userID" + event.userId, ":: courseName" + event.courseName, ":: Level" + event.eData.get("competencyLevel"),
+          ":: IssuedDate" + event.eData.get("issuedDate"), ":: primaryCategory" + event.eData.get("primaryCategory"), ":: UUID" +uuid)
         //adding certificate to registry
         val addReq = Map[String, AnyRef](JsonKeys.REQUEST -> {Map[String, AnyRef](
           JsonKeys.ID -> uuid, JsonKeys.JSON_URL -> certificateConfig.basePath.concat(jsonUrl),
