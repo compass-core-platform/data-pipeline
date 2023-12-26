@@ -29,7 +29,6 @@ object SvgGenerator {
       cachedTemplate = "data:image/svg+xml," + encodeData(cachedTemplate)
       cachedTemplate = cachedTemplate.replaceAll("\n", "").replaceAll("\t", "")
       svgTemplatesCache = svgTemplatesCache.put(svgTemplateUrl, cachedTemplate)._2
-      logger.info("{} svg not cached , cachedTemplate", cachedTemplate)
     } else {
       logger.info("{} svg is cached, cache hit", svgTemplateUrl)
       svgTemplatesCache = svgTemplatesCache.hit(svgTemplateUrl)
