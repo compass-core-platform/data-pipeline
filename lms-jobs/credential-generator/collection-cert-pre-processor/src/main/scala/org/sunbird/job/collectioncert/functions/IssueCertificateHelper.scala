@@ -22,6 +22,7 @@ trait IssueCertificateHelper {
         logger.info("IssueCertificateHelper:: issueCertificate:: event:: "+event)
         logger.info("IssueCertificateHelper:: issueCertificate:: score:: "+event.score)
         logger.info("IssueCertificateHelper:: issueCertificate:: edata:: "+event.eData.get("score"))
+        var userScore=event.score
         val criteria = validateTemplate(template, event.batchId)(config)
         //validateEnrolmentCriteria
         val certName = template.getOrElse(config.name, "")
@@ -40,6 +41,7 @@ trait IssueCertificateHelper {
 
         //generateCertificateEvent
         if(userDetails.nonEmpty) {
+            event.score = userScore
             logger.info("before calling generateCertificateEvent:: issueCertificate:: event:: "+event)
             generateCertificateEvent(event, template, userDetails, enrolledUser, assessedUser, additionalProps, certName)(metrics, config, cache, httpUtil)
         } else {
@@ -299,7 +301,8 @@ trait IssueCertificateHelper {
                 "tag" -> event.batchId,
                 "competencyName" -> name,
                 "competencyLevel" -> level,
-                "primaryCategory" -> primaryCategory
+                "primaryCategory" -> primaryCategory,
+                "score" -> event.score
             )
 
         logger.info("IssueCertificateHelper:: generateCertificateEvent:: eData:: " + eData)
