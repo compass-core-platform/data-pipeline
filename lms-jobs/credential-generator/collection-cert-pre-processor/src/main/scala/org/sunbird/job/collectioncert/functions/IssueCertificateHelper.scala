@@ -20,6 +20,8 @@ trait IssueCertificateHelper {
     def issueCertificate(event:Event, template: Map[String, String])(cassandraUtil: CassandraUtil, cache:DataCache, contentCache: DataCache, metrics: Metrics, config: CollectionCertPreProcessorConfig, httpUtil: HttpUtil): String = {
         //validCriteria
         logger.info("IssueCertificateHelper:: issueCertificate:: event:: "+event)
+        logger.info("IssueCertificateHelper:: issueCertificate:: score:: "+event.score)
+        logger.info("IssueCertificateHelper:: issueCertificate:: edata:: "+event.eData.get("score"))
         val criteria = validateTemplate(template, event.batchId)(config)
         //validateEnrolmentCriteria
         val certName = template.getOrElse(config.name, "")
@@ -38,6 +40,7 @@ trait IssueCertificateHelper {
 
         //generateCertificateEvent
         if(userDetails.nonEmpty) {
+            logger.info("before calling generateCertificateEvent:: issueCertificate:: event:: "+event)
             generateCertificateEvent(event, template, userDetails, enrolledUser, assessedUser, additionalProps, certName)(metrics, config, cache, httpUtil)
         } else {
             logger.info(s"""User :: ${event.userId} did not match the criteria for batch :: ${event.batchId} and course :: ${event.courseId}""")
