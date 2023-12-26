@@ -104,6 +104,12 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
         logger.info("printing requried body for api user assessment :" + event.competencyName,
           ":: userID" + event.userId, ":: courseName" + event.courseName, ":: Level" + event.eData.get("competencyLevel"),
           ":: IssuedDate" + event.eData.get("issuedDate"), ":: primaryCategory" + event.eData.get("primaryCategory"), ":: UUID" +uuid)
+        logger.info("printing requried body for api user event.userId :" + event.userId)
+        logger.info("printing requried body for api user event.courseName :" + event.courseName)
+        logger.info("printing requried body for api user event.eData.get(\"competencyLevel\") :" + event.eData.get("competencyLevel"))
+        logger.info("printing requried body for api user event.eData.get(\"issuedDate\"):" + event.eData.get("issuedDate"))
+        logger.info("printing requried body for api user primaryCategory\" + event.eData.get(\"primaryCategory\")," + event.eData.get("primaryCategory"))
+        logger.info("printing requried body for api user \":: UUID\" +uuid :" +uuid)
         //adding certificate to registry
         val addReq = Map[String, AnyRef](JsonKeys.REQUEST -> {Map[String, AnyRef](
           JsonKeys.ID -> uuid, JsonKeys.JSON_URL -> certificateConfig.basePath.concat(jsonUrl),
