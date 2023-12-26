@@ -395,6 +395,7 @@ collection-certificate-generator:
       enc.basePath = "{{ enc_service_base_url }}"
       rc.basePath = "http://registry-service.dev.svc.cluster.local:8081"
       rc.entity = "{{ cert_rc_entity }}"
+      lms.basepath = "http://localhost:9000/course"
     }
     enable.suppress.exception = {{ collection_certificate_generator_enable_suppress_exception | lower }}
     enable.rc.certificate = false
