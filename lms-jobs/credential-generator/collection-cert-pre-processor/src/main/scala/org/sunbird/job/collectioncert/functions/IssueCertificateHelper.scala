@@ -207,7 +207,7 @@ trait IssueCertificateHelper {
 
     def getCourseName(courseId: String)(metrics:Metrics, config:CollectionCertPreProcessorConfig, cache:DataCache, httpUtil: HttpUtil): Map[String,Any] = {
         val courseMetadata = cache.getWithRetry(courseId)
-      val url = config.contentBasePath + config.contentReadApi + "/" + courseId + "?fields=name,targetTaxonomyCategory4Ids,targetTaxonomyCategory5Ids"
+      val url = config.contentBasePath + config.contentReadApi + "/" + courseId + "?fields=name,targetTaxonomyCategory4Ids,targetTaxonomyCategory5Ids,primaryCategory"
       val response = getAPICall(url, "content")(config, httpUtil, metrics)
       if(null == courseMetadata || courseMetadata.isEmpty) {
 //            val url = config.contentBasePath + config.contentReadApi + "/" + courseId + "?fields=name,targetTaxonomyCategory4Ids,targetTaxonomyCategory5Ids"
@@ -217,14 +217,16 @@ trait IssueCertificateHelper {
           val courseName = StringContext.processEscapes(response.getOrElse(config.name, "").asInstanceOf[String]).filter(_ >= ' ')
           val competencyName  = response.getOrElse("targetTaxonomyCategory4Ids", List.empty[String]).asInstanceOf[List[String]]
           val CompetencyLevel = response.getOrElse("targetTaxonomyCategory5Ids", List.empty[String]).asInstanceOf[List[String]]
+          val primaryCategory = StringContext.processEscapes(response.getOrElse(config.PRIMARYCATEGORY, "").asInstanceOf[String]).filter(_ >= ' ')
 
-          Map("name" -> courseName, "competencyName" -> competencyName, "compentencyLevel" -> CompetencyLevel)
+          Map("name" -> courseName, "competencyName" -> competencyName, "compentencyLevel" -> CompetencyLevel, "primaryCategory" -> primaryCategory)
         } else {
 //            StringContext.processEscapes(courseMetadata.getOrElse(config.name, "").asInstanceOf[String]).filter(_ >= ' ')
           val name = StringContext.processEscapes(courseMetadata.getOrElse("name", "").asInstanceOf[String]).filter(_ >= ' ')
           val competencyName = response.getOrElse("targetTaxonomyCategory4Ids", List.empty[String]).asInstanceOf[List[String]]
           val CompetencyLevel = response.getOrElse("targetTaxonomyCategory5Ids", List.empty[String]).asInstanceOf[List[String]]
-          Map("name" -> name, "competencyName" -> competencyName, "compentencyLevel" -> CompetencyLevel)
+          val primaryCategory = StringContext.processEscapes(response.getOrElse(config.PRIMARYCATEGORY, "").asInstanceOf[String]).filter(_ >= ' ')
+          Map("name" -> name, "competencyName" -> competencyName, "compentencyLevel" -> CompetencyLevel, "primaryCategory" -> primaryCategory)
 
         }
     }
@@ -255,24 +257,23 @@ trait IssueCertificateHelper {
        // val courseName = getCourseName(event.courseId)(metrics, config, cache, httpUtil)
         val courseData = getCourseName(event.courseId)(metrics, config, cache, httpUtil)
         logger.info("printing courseDAta "+courseData)
-//        val courseName = courseData.getOrElse("name", "").asInstanceOf[String].filter(_ >= ' ')
-          val courseName = courseData.get("name").collect {
-            case name: String => StringContext.processEscapes(name).filter(_ >= ' ')
-          }.getOrElse("")
-        logger.info("printing courseDAta "+courseData)
-//        val competencyName = courseData.getOrElse("competency", List.empty[String]).asInstanceOf[List[String]]
-//        val competencyLevel = courseData.getOrElse("competencyLevel", List.empty[String]).asInstanceOf[List[String]]
+
+      val courseName = courseData.get("name").collect {
+        case name: String => StringContext.processEscapes(name).filter(_ >= ' ')
+      }.getOrElse("")
+      val primaryCategory = courseData.get("primaryCategory").collect {
+        case name: String => StringContext.processEscapes(name).filter(_ >= ' ')
+      }.getOrElse("")
       val competencyName = courseData.getOrElse("competencyName", List.empty[String]).asInstanceOf[List[String]].headOption.getOrElse("")
       val competencyLevel = courseData.getOrElse("compentencyLevel", List.empty[String]).asInstanceOf[List[String]].headOption.getOrElse("")
-      logger.info("printing courseName:: and competencyName:: and competencyLevel:: " +courseName + " || " + competencyName + " || " +competencyLevel)
 
       val (framework, category, term) = parseCompetencyString(competencyName)
       val name = fetchTermDetails(category,framework, term)(metrics, config, cache, httpUtil)
-      logger.info("printing fetchTermDetails for compentencyDetails "+name)
+
 
       val (frameworkCompetencyLevel, categoryCompetencyLevel, termCompetencyLevel) = parseCompetencyString(competencyLevel)
       val level = fetchTermDetails(categoryCompetencyLevel,frameworkCompetencyLevel, termCompetencyLevel)(metrics, config, cache, httpUtil)
-      logger.info("printing fetchTermDetails for compentencyDetails "+level)
+
 
       val dateFormatter = new SimpleDateFormat("yyyy-MM-dd")
         val related = getRelatedData(event, enrolledUser, assessedUser, userDetails, additionalProps, certName, courseName)(config)
@@ -293,7 +294,8 @@ trait IssueCertificateHelper {
                 "name" -> certName,
                 "tag" -> event.batchId,
                 "competencyName" -> name,
-                "competencyLevel" -> level
+                "competencyLevel" -> level,
+                "primaryCategory" -> primaryCategory
             )
 
         logger.info("IssueCertificateHelper:: generateCertificateEvent:: eData:: " + eData)
