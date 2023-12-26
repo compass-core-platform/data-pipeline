@@ -132,8 +132,11 @@ class UserScoreAggregateFunction(config: AssessmentAggregatorConfig,
   }
 
   def extractScoreFromJsonUtil(jsonString: String): Option[Double] = {
-    val jsonMap = JSONUtil.deserialize[Map[String, Any]](jsonString)
-    jsonMap.get("score").map(_.asInstanceOf[Double])
+    val jsonMap = JSONUtil.deserialize[util.Map[String, Any]](jsonString)
+    val scoreOption: Option[Double] =
+      Option(jsonMap.get("score").asInstanceOf[Double])
+        .orElse(Option(jsonMap.get("score").toString.toDouble))
+    scoreOption
   }
   /**
    * Generation of Certificate Issue event for the enrolment completed users to validate and generate certificate.
