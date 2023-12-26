@@ -106,7 +106,9 @@ trait IssueCertificateHelper {
 
     def validateUser(userId: String, userCriteria: Map[String, AnyRef])(metrics:Metrics, config:CollectionCertPreProcessorConfig, httpUtil: HttpUtil): Map[String, AnyRef] = {
         if(userId.nonEmpty) {
+            logger.info("validateUser inside "+userId, userCriteria)
             val url = config.learnerBasePath + config.userReadApi + "/" + userId + "?organisations,roles,locations,declarations,externalIds"
+            logger.info("userReadUrl "+url)
             val result = getAPICall(url, "response")(config, httpUtil, metrics)
             if(userCriteria.isEmpty || userCriteria.size == userCriteria.count(uc => uc._2 == result.getOrElse(uc._1, null))) {
                 result
