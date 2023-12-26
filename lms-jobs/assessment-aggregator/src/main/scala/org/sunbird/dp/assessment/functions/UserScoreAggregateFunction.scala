@@ -86,6 +86,8 @@ class UserScoreAggregateFunction(config: AssessmentAggregatorConfig,
       .and(QueryBuilder.eq(config.contextId, "cb:" + event.batchId))
       .and(QueryBuilder.eq(config.activityUser, event.userId))
     cassandraUtil.upsert(updateQuery.toString)
+    logger.info("score to updatecore.score.aggregates.asJava :" +score.aggregates.asJava)
+    logger.info("score to updatecore.score.aggDetails.asJava :" +score.aggDetails.asJava)
     logger.info("Successfully updated scores in user activity  - batchid: "
       + event.batchId + " ,userid: " + event.userId + " ,courseid: "
       + event.courseId)
@@ -97,6 +99,7 @@ class UserScoreAggregateFunction(config: AssessmentAggregatorConfig,
     val score: UserActivityAgg = getBestScore(event)
     metrics.incCounter(config.dbScoreAggReadCount)
     if (score.aggregates.nonEmpty || score.aggDetails.nonEmpty) {
+      logger.info("score to update :" +score)
       updateUserActivity(event, score)
       metrics.incCounter(config.dbScoreAggUpdateCount)
     } else {
