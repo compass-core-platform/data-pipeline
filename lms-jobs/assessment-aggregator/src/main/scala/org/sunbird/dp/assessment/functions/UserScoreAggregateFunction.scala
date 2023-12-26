@@ -100,6 +100,9 @@ class UserScoreAggregateFunction(config: AssessmentAggregatorConfig,
     metrics.incCounter(config.dbScoreAggReadCount)
     if (score.aggregates.nonEmpty || score.aggDetails.nonEmpty) {
       logger.info("score to update :" +score)
+      val userScore = score.aggregates.getOrElse("score",0.0)
+      logger.info("userScore to update :" +userScore)
+      event.score = userScore.toString
       updateUserActivity(event, score)
       metrics.incCounter(config.dbScoreAggUpdateCount)
     } else {
@@ -122,7 +125,6 @@ class UserScoreAggregateFunction(config: AssessmentAggregatorConfig,
 
       latestAttempt.getOrElse("attempt_id", "").asInstanceOf[String]
     } else ""
-
     createIssueCertEvent(event, context, metrics, latestAttemptId)
   }
 

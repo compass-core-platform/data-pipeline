@@ -21,9 +21,7 @@ class CertificateGenerator(implicit certificateConfig: CertificateConfig) {
   @throws[SignatureException.CreationException]
   @throws[IOException]
   def getCertificateExtension(certModel: CertModel): CertificateExtension = {
-    logger.info("inside getCertificateExtension function certModel " +certModel)
     val certificateExtension = CertificateFactory.createCertificate(certModel)
-    logger.info("inside getCertificateExtension function " +certificateExtension)
     certificateExtension
   }
 
