@@ -20,15 +20,12 @@ trait IssueCertificateHelper {
     def issueCertificate(event:Event, template: Map[String, String])(cassandraUtil: CassandraUtil, cache:DataCache, contentCache: DataCache, metrics: Metrics, config: CollectionCertPreProcessorConfig, httpUtil: HttpUtil): String = {
         //validCriteria
         logger.info("IssueCertificateHelper:: issueCertificate:: event:: "+event)
-        logger.info("IssueCertificateHelper:: issueCertificate:: score:: "+event.score)
-        logger.info("IssueCertificateHelper:: issueCertificate:: edata:: "+event.eData.get("score"))
-        var userScore=event.score
+
         val criteria = validateTemplate(template, event.batchId)(config)
-        val updateTemplate = template + ("score" -> userScore.toString)
-        logger.info("IssueCertificateHelper:: template:: "+updateTemplate)
+
         //validateEnrolmentCriteria
-        val certName = updateTemplate.getOrElse(config.name, "")
-        val additionalProps: Map[String, List[String]] = ScalaJsonUtil.deserialize[Map[String, List[String]]](updateTemplate.getOrElse("additionalProps", "{}"))
+        val certName = template.getOrElse(config.name, "")
+        val additionalProps: Map[String, List[String]] = ScalaJsonUtil.deserialize[Map[String, List[String]]](template.getOrElse("additionalProps", "{}"))
 
         val enrolledUser: EnrolledUser = validateEnrolmentCriteria(event, criteria.getOrElse(config.enrollment, Map[String, AnyRef]()).asInstanceOf[Map[String, AnyRef]], certName, additionalProps)(metrics, cassandraUtil, config)
         logger.info("IssueCertificateHelper:: issueCertificate:: enrolledUser:: "+enrolledUser)
@@ -43,9 +40,8 @@ trait IssueCertificateHelper {
 
         //generateCertificateEvent
         if(userDetails.nonEmpty) {
-            event.score = userScore
             logger.info("before calling generateCertificateEvent:: issueCertificate:: event:: "+event)
-            generateCertificateEvent(event, updateTemplate, userDetails, enrolledUser, assessedUser, additionalProps, certName)(metrics, config, cache, httpUtil)
+            generateCertificateEvent(event, template, userDetails, enrolledUser, assessedUser, additionalProps, certName)(metrics, config, cache, httpUtil)
         } else {
             logger.info(s"""User :: ${event.userId} did not match the criteria for batch :: ${event.batchId} and course :: ${event.courseId}""")
             null
@@ -255,9 +251,6 @@ trait IssueCertificateHelper {
     def generateCertificateEvent(event: Event, template: Map[String, String], userDetails: Map[String, AnyRef], enrolledUser: EnrolledUser, assessedUser: AssessedUser, additionalProps: Map[String, List[String]], certName: String)(metrics:Metrics, config:CollectionCertPreProcessorConfig, cache:DataCache, httpUtil: HttpUtil): String = {
         val firstName = Option(userDetails.getOrElse("firstName", "").asInstanceOf[String]).getOrElse("")
         val lastName = Option(userDetails.getOrElse("lastName", "").asInstanceOf[String]).getOrElse("")
-      logger.info("printing event from generateCertificateEvent "+event)
-        logger.info("printing score from generateCertificateEvent "+event.score)
-      logger.info("printing template from generateCertificateEvent "+template)
         def nullStringCheck(name: String): String = {
             if (StringUtils.equalsIgnoreCase("null", name)) "" else name
         }
@@ -304,8 +297,7 @@ trait IssueCertificateHelper {
                 "tag" -> event.batchId,
                 "competencyName" -> name,
                 "competencyLevel" -> level,
-                "primaryCategory" -> primaryCategory,
-                "score" -> event.score
+                "primaryCategory" -> primaryCategory
             )
 
         logger.info("IssueCertificateHelper:: generateCertificateEvent:: eData:: " + eData)
