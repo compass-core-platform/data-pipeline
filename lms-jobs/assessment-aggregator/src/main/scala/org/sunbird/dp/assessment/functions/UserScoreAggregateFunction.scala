@@ -101,9 +101,10 @@ class UserScoreAggregateFunction(config: AssessmentAggregatorConfig,
     if (score.aggregates.nonEmpty || score.aggDetails.nonEmpty) {
       val desiredAggDetails: List[String] = score.aggDetails
       logger.info("desiredAggDetails :" +desiredAggDetails)
-      logger.info("score to update :" +score)
-      val userScore = score.aggregates.getOrElse("score",0.0)
-      logger.info("userScore to update :" +userScore)
+      val optionScore: Option[Double] = desiredAggDetails.headOption.flatMap(extractScoreFromJsonUtil)
+      val userScore: Double = optionScore.getOrElse(0.0)
+      logger.info("score to update :" +userScore)
+      //val userScore = score.aggregates.getOrElse("score",0.0)
       event.score = userScore.toString
       updateUserActivity(event, score)
       metrics.incCounter(config.dbScoreAggUpdateCount)
@@ -130,7 +131,10 @@ class UserScoreAggregateFunction(config: AssessmentAggregatorConfig,
     createIssueCertEvent(event, context, metrics, latestAttemptId)
   }
 
-
+  def extractScoreFromJsonUtil(jsonString: String): Option[Double] = {
+    val jsonMap = JSONUtil.deserialize[Map[String, Any]](jsonString)
+    jsonMap.get("score").map(_.asInstanceOf[Double])
+  }
   /**
    * Generation of Certificate Issue event for the enrolment completed users to validate and generate certificate.
    *
