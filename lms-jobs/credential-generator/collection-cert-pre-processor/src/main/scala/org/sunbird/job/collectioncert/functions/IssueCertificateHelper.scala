@@ -24,9 +24,11 @@ trait IssueCertificateHelper {
         logger.info("IssueCertificateHelper:: issueCertificate:: edata:: "+event.eData.get("score"))
         var userScore=event.score
         val criteria = validateTemplate(template, event.batchId)(config)
+        val updateTemplate = template + ("score" -> userScore.toString)
+        logger.info("IssueCertificateHelper:: template:: "+updateTemplate)
         //validateEnrolmentCriteria
-        val certName = template.getOrElse(config.name, "")
-        val additionalProps: Map[String, List[String]] = ScalaJsonUtil.deserialize[Map[String, List[String]]](template.getOrElse("additionalProps", "{}"))
+        val certName = updateTemplate.getOrElse(config.name, "")
+        val additionalProps: Map[String, List[String]] = ScalaJsonUtil.deserialize[Map[String, List[String]]](updateTemplate.getOrElse("additionalProps", "{}"))
 
         val enrolledUser: EnrolledUser = validateEnrolmentCriteria(event, criteria.getOrElse(config.enrollment, Map[String, AnyRef]()).asInstanceOf[Map[String, AnyRef]], certName, additionalProps)(metrics, cassandraUtil, config)
         logger.info("IssueCertificateHelper:: issueCertificate:: enrolledUser:: "+enrolledUser)
@@ -43,7 +45,7 @@ trait IssueCertificateHelper {
         if(userDetails.nonEmpty) {
             event.score = userScore
             logger.info("before calling generateCertificateEvent:: issueCertificate:: event:: "+event)
-            generateCertificateEvent(event, template, userDetails, enrolledUser, assessedUser, additionalProps, certName)(metrics, config, cache, httpUtil)
+            generateCertificateEvent(event, updateTemplate, userDetails, enrolledUser, assessedUser, additionalProps, certName)(metrics, config, cache, httpUtil)
         } else {
             logger.info(s"""User :: ${event.userId} did not match the criteria for batch :: ${event.batchId} and course :: ${event.courseId}""")
             null
@@ -255,6 +257,7 @@ trait IssueCertificateHelper {
         val lastName = Option(userDetails.getOrElse("lastName", "").asInstanceOf[String]).getOrElse("")
       logger.info("printing event from generateCertificateEvent "+event)
         logger.info("printing score from generateCertificateEvent "+event.score)
+      logger.info("printing template from generateCertificateEvent "+template)
         def nullStringCheck(name: String): String = {
             if (StringUtils.equalsIgnoreCase("null", name)) "" else name
         }
