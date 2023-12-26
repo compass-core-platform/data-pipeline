@@ -99,6 +99,8 @@ class UserScoreAggregateFunction(config: AssessmentAggregatorConfig,
     val score: UserActivityAgg = getBestScore(event)
     metrics.incCounter(config.dbScoreAggReadCount)
     if (score.aggregates.nonEmpty || score.aggDetails.nonEmpty) {
+      val desiredAggDetails: List[String] = score.aggDetails
+      logger.info("desiredAggDetails :" +desiredAggDetails)
       logger.info("score to update :" +score)
       val userScore = score.aggregates.getOrElse("score",0.0)
       logger.info("userScore to update :" +userScore)
@@ -147,7 +149,7 @@ class UserScoreAggregateFunction(config: AssessmentAggregatorConfig,
          |"actor": {"id": "Course Certificate Generator","type": "System"},
          |"context": {"pdata": {"ver": "1.0","id": "org.sunbird.platform"}},
          |"object": {"id": "${batchEvent.batchId}_${batchEvent.courseId}","type": "CourseCertificateGeneration"},
-         |"edata": {"userIds": ["${batchEvent.userId}"],"action": "issue-certificate","iteration": 1, "trigger": "auto-issue","batchId": "${batchEvent.batchId}","reIssue": false,"courseId": "${batchEvent.courseId}","attemptId":"$latestAttemptId"}}"""
+         |"edata": {"userIds": ["${batchEvent.userId}"],"action": "issue-certificate","iteration": 1, "trigger": "auto-issue","batchId": "${batchEvent.batchId}","reIssue": false,"courseId": "${batchEvent.courseId}","attemptId":"$latestAttemptId","score": "${batchEvent.score}"}}"""
         .stripMargin.replaceAll("\n", "")
     logger.info("UserScoreAggregateFunction:: createIssueCertEvent:: " + event)
     context.output(config.certIssueOutputTag, event)
