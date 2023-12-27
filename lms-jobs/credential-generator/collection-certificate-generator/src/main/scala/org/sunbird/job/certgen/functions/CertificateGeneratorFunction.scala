@@ -159,7 +159,6 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
     val typeValue = if (primaryCategory.toLowerCase == "course") "CBP" else "SELF"
     try {
       val requestBody: Map[String, Any] = Map(
-        "" -> Map(
         "userId" -> event.userId,
         "competency" -> event.competencyName,
         "certificateId" -> uuid,
@@ -168,8 +167,7 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
         "score" -> totalScore,
         "levelNumber" -> level,
         "primaryCategory" -> primaryCategory,
-          "type" -> typeValue
-        )
+        "type" -> typeValue
       )
       logger.info("printing addUserAssessment requestbody " + requestBody)
       val httpRequest = JSONUtil.serialize(requestBody)
