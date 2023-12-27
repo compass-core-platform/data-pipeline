@@ -173,6 +173,7 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
       )
       logger.info("printing addUserAssessment requestbody " + requestBody)
       val httpRequest = JSONUtil.serialize(ADDUSERASSESSMENTAPIPATH)
+      logger.info("printing httpRequest " + httpRequest)
       val httpResponse = httpUtil.post(CONTENTSTATEREADAPIPath, httpRequest)
       if (httpResponse.status == 200) {
         logger.info("Successfully received HTTP response for addUserAssessment: " + httpResponse.status)
