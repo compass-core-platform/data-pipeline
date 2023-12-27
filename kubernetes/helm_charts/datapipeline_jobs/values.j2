@@ -395,7 +395,7 @@ collection-certificate-generator:
       enc.basePath = "{{ enc_service_base_url }}"
       rc.basePath = "http://{{private_ingressgateway_ip}}/registry-service/api/v1"
       rc.entity = "{{ cert_rc_entity }}"
-      lms.basepath = "http://localhost:9000/course"
+      lms.basepath = "http://10.6.1.100/lms"
     }
     enable.suppress.exception = {{ collection_certificate_generator_enable_suppress_exception | lower }}
     enable.rc.certificate = false

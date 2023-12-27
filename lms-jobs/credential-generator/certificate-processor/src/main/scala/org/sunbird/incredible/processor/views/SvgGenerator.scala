@@ -33,7 +33,6 @@ object SvgGenerator {
       logger.info("{} svg is cached, cache hit", svgTemplateUrl)
       svgTemplatesCache = svgTemplatesCache.hit(svgTemplateUrl)
     }
-    logger.info("{} cachedTemplate", cachedTemplate)
     val svgData = replaceTemplateVars(cachedTemplate, certificateExtension, encodedQrCode)
     logger.info("svg template string creation completed")
     svgData
