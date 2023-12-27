@@ -113,12 +113,14 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
         addCertToRegistry(event, addReq, context)(metrics)
         //cert-registry end
         //Add an assessment for a user record assessment data for a specific user in the Passbook system.
-        val scoreOption = fetchContentState(uuid, event,context)(metrics)
+        val scoreOption = fetchContentState(event,context)(metrics)
         val totalScore: Double = scoreOption match {
           case Some(score) => score
           case None => 0.0
         }
-        logger.info("printing totalscore from generateCertificate" +totalScore)
+        logger.info("printing totalscore from generateCertificate" +totalScore.toString)
+        val level = fetchCompetencyLevel(event, context)(metrics)
+        addUserAssessment(event,context,uuid,totalScore.toString,level)(metrics)
         val related = event.related
         val userEnrollmentData = UserEnrollmentData(related.getOrElse(config.BATCH_ID, "").asInstanceOf[String], certModel.identifier,
           related.getOrElse(config.COURSE_ID, "").asInstanceOf[String], event.courseName, event.templateId,
@@ -130,7 +132,48 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
       }
     })
   }
-  def fetchContentState(uuid: String, event: Event, context: KeyedProcessFunction[String, Event, String]#Context)(implicit metrics: Metrics): Option[Double] = {
+
+
+  def fetchCompetencyLevel(event: Event, context: KeyedProcessFunction[String, Event, String]#Context)(implicit metrics: Metrics): Int = {
+    logger.info("fetchCompetencyLevel event" +event)
+    val competencyLevelOption = event.eData.get("competencyLevel")
+    val competencyLevelStringOption: Option[String] = competencyLevelOption.map(_.toString)
+    val regex = """\d+""".r
+    val competencyLevelIntOption = competencyLevelStringOption.flatMap(regex.findFirstIn).map(_.toInt)
+    val levelOption: Option[Int] = competencyLevelIntOption
+    val level: Int = levelOption match {
+      case Some(competencyLevelInt) =>
+        println(s"The integer value of competencyLevel is: $competencyLevelInt")
+        competencyLevelInt
+      case None =>
+        println("No integer value found in the string.")
+        0
+    }
+    logger.info("fetchCompetencyLevel level value is :: " +level)
+    level
+  }
+  def addUserAssessment(event: Event, context: KeyedProcessFunction[String, Event, String]#Context, uuid: String, totalScore: String, level: Int)(implicit metrics: Metrics): Unit = {
+    logger.info("addUserAssessment:" + event)
+    try {
+      val requestBody: Map[String, Any] = Map(
+        "" -> Map(
+        "userId" -> event.userId,
+        "competency" -> event.competencyName,
+        "certificateId" -> uuid,
+        "dateOfIssuance" -> event.issuedDate,
+        "competencyId" -> 1,
+        "score" -> totalScore,
+        "levelNumber" -> level,
+        "primaryCategory" -> event.eData.get("primaryCategory")
+        )
+      )
+      logger.info("printing addUserAssessment requestbody " + requestBody)
+    } catch {
+      case ex: Exception =>
+        logger.error("Exception occurred: " + ex.getMessage)
+    }
+  }
+  def fetchContentState(event: Event, context: KeyedProcessFunction[String, Event, String]#Context)(implicit metrics: Metrics): Option[Double] = {
     logger.info("content state read for this batch:" + event.batchId + ", courseId: " + event.courseId)
     try {
       if (event.batchId != null && event.courseId != null && event.userId != null) {
