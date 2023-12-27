@@ -33,6 +33,7 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
   extends BaseProcessKeyedFunction[String, Event, String](config) {
 
   val CONTENTSTATEREADAPIPath = config.getString("service.lms.basepath","") + "/private/v1/content/state/read"
+  val ADDUSERASSESSMENTAPIPATH = config.getString("service.samagra.basepath","")+ "/user/assessment"
 
   private[this] val logger = LoggerFactory.getLogger(classOf[CertificateGeneratorFunction])
   val mapType: Type = new TypeToken[java.util.Map[String, AnyRef]]() {}.getType
@@ -154,6 +155,8 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
   }
   def addUserAssessment(event: Event, context: KeyedProcessFunction[String, Event, String]#Context, uuid: String, totalScore: String, level: Int)(implicit metrics: Metrics): Unit = {
     logger.info("addUserAssessment:" + event)
+    val primaryCategory:String = event.eData.get("primaryCategory").getOrElse("").asInstanceOf[String]
+    val typeValue = if (primaryCategory.toLowerCase == "course") "CBP" else "SELF"
     try {
       val requestBody: Map[String, Any] = Map(
         "" -> Map(
@@ -164,10 +167,20 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
         "competencyId" -> 1,
         "score" -> totalScore,
         "levelNumber" -> level,
-        "primaryCategory" -> event.eData.get("primaryCategory")
+        "primaryCategory" -> primaryCategory,
+          "type" -> typeValue
         )
       )
       logger.info("printing addUserAssessment requestbody " + requestBody)
+      val httpRequest = JSONUtil.serialize(ADDUSERASSESSMENTAPIPATH)
+      val httpResponse = httpUtil.post(CONTENTSTATEREADAPIPath, httpRequest)
+      if (httpResponse.status == 200) {
+        logger.info("Successfully received HTTP response for addUserAssessment: " + httpResponse.status)
+        logger.info("HTTP response body for addUserAssessment endpoint: " + httpResponse.body)
+      } else {
+        logger.error("Failed to add user record assessment data in the Passbook system. " + httpResponse.status + " :: " + httpResponse.body)
+        throw new Exception("Failed to add user record assessment data in the Passbook system.")
+      }
     } catch {
       case ex: Exception =>
         logger.error("Exception occurred: " + ex.getMessage)
