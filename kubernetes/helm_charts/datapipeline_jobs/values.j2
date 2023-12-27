@@ -396,6 +396,7 @@ collection-certificate-generator:
       rc.basePath = "http://registry-service.dev.svc.cluster.local:8081"
       rc.entity = "{{ cert_rc_entity }}"
       lms.basepath = "http://10.6.1.100/lms"
+      samagra.basepath = "https://compass.samagra.io/api"
     }
     enable.suppress.exception = {{ collection_certificate_generator_enable_suppress_exception | lower }}
     enable.rc.certificate = false
