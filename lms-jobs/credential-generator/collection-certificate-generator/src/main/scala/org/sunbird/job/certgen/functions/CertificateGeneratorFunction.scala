@@ -114,10 +114,12 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
         addCertToRegistry(event, addReq, context)(metrics)
         //cert-registry end
         //Add an assessment for a user record assessment data for a specific user in the Passbook system.
-        val scoreOption = fetchContentState(event,context)(metrics)
-        val totalScore: Double = scoreOption match {
-          case Some(score) => score
-          case None => 0.0
+        val primaryCategory = event.eData.get("primaryCategory").getOrElse("").asInstanceOf[String]
+        val totalScore: Double = if (primaryCategory.toLowerCase == "course") {
+          0.0
+        } else {
+          val scoreOption = fetchContentState(event, context)(metrics)
+          scoreOption.getOrElse(0.0)
         }
         logger.info("printing totalscore from generateCertificate" +totalScore.toString)
         val level = fetchCompetencyLevel(event, context)(metrics)
