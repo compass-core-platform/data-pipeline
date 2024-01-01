@@ -34,6 +34,7 @@ class Event(eventMap: util.Map[String, Any]) extends Events(eventMap) {
   }
 
   var score: String = "0"
+  var maxScore: String = "0"
 
   def assessEvents: util.ArrayList[util.Map[String, AnyRef]] = {
     telemetry.read[util.ArrayList[util.Map[String, AnyRef]]]("events").getOrElse(null)
