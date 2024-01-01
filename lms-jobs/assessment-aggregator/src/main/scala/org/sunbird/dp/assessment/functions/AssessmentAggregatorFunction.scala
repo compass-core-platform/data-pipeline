@@ -86,6 +86,7 @@ class AssessmentAggregatorFunction(config: AssessmentAggregatorConfig,
                               metrics: Metrics): Unit = {
     try {
       logger.info("AssessmentAggregatorFunction:: processElement:: event:: " + event)
+      logger.info("AssessmentAggregatorFunction:: processElement:: event maxscore:: " + event.maxScore)
       // Validating the contentId
       if (isValidContent(event.courseId, event.contentId)(metrics)) {
         val assessEvents = event.assessEvents.asScala
@@ -175,6 +176,7 @@ class AssessmentAggregatorFunction(config: AssessmentAggregatorConfig,
     val questions = events.map(event => {
       totalScore = totalScore + event.edata.score
       totalMaxScore = totalMaxScore + event.edata.item.maxscore
+      //totalMaxScore = totalMaxScore +  maxScore
       getQuestion(event.edata, event.ets.longValue())
     })
     val grandTotal = String.format("%s/%s", df.format(totalScore), df.format(totalMaxScore))
