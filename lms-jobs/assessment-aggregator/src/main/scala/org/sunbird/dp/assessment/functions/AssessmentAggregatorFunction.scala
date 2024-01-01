@@ -247,6 +247,7 @@ class AssessmentAggregatorFunction(config: AssessmentAggregatorConfig,
       metrics.incCounter(config.apiHitSuccessCount)
       val result = contentReadResp.getOrDefault("result", new util.HashMap()).asInstanceOf[util.Map[String, AnyRef]]
       val content = result.getOrDefault("content", new util.HashMap()).asInstanceOf[util.Map[String, Any]]
+      logger.info(s"Fetched the content from Content Read API - ContentId:$contentId, content:$content")
       val totalQuestions = content.getOrDefault("totalQuestions", null)
       logger.info(s"Fetched the totalQuestion Value from the Content Read API - ContentId:$contentId, TotalQuestionCount:$totalQuestions")
       totalQuestions
