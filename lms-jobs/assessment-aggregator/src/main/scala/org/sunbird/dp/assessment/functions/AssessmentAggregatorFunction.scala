@@ -176,7 +176,8 @@ class AssessmentAggregatorFunction(config: AssessmentAggregatorConfig,
     val questions = events.map(event => {
       logger.info("AssessmentAggregatorFunction:: computeScoreMetrics:: event maxscore:: " +event.edata.totalMaxScore)
       totalScore = totalScore + event.edata.score
-      totalMaxScore = totalMaxScore + event.edata.item.maxscore
+     // totalMaxScore = totalMaxScore + event.edata.item.maxscore
+      totalMaxScore = totalMaxScore + event.edata.totalMaxScore
       getQuestion(event.edata, event.ets.longValue())
     })
     val grandTotal = String.format("%s/%s", df.format(totalScore), df.format(totalMaxScore))
