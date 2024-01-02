@@ -27,7 +27,7 @@ import scala.collection.mutable
 
 case class Question(id: String, maxscore: Double, params: util.List[util.HashMap[String, Any]], title: String, `type`: String, desc: String)
 
-case class QuestionData(resvalues: util.List[util.HashMap[String, Any]], duration: Double, score: Double, item: Question)
+case class QuestionData(resvalues: util.List[util.HashMap[String, Any]], duration: Double, score: Double, item: Question, totalMaxScore: Double)
 
 case class AssessEvent(ets: Long, edata: QuestionData)
 
@@ -174,6 +174,7 @@ class AssessmentAggregatorFunction(config: AssessmentAggregatorConfig,
     var totalMaxScore = 0.0
     val df = new DecimalFormat("0.0#")
     val questions = events.map(event => {
+      logger.info("AssessmentAggregatorFunction:: processElement:: event maxscore:: " +event.edata.totalMaxScore)
       totalScore = totalScore + event.edata.score
       totalMaxScore = totalMaxScore + event.edata.item.maxscore
       getQuestion(event.edata, event.ets.longValue())
