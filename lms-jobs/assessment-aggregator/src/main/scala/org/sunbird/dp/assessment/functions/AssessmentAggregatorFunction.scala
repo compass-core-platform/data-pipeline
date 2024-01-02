@@ -173,15 +173,19 @@ class AssessmentAggregatorFunction(config: AssessmentAggregatorConfig,
     var totalScore = 0.0
     var totalMaxScore = 0.0
     val df = new DecimalFormat("0.0#")
+    val newTotalMaxScore: Double = events
+      .find(_.edata.totalMaxScore > 0.0)
+      .map(_.edata.totalMaxScore)
+      .getOrElse(0.0)
     val questions = events.map(event => {
       logger.info("AssessmentAggregatorFunction:: computeScoreMetrics:: event maxscore:: " +event.edata.totalMaxScore)
       totalScore = totalScore + event.edata.score
-     // totalMaxScore = totalMaxScore + event.edata.item.maxscore
-      totalMaxScore = totalMaxScore + event.edata.totalMaxScore
+     //totalMaxScore = totalMaxScore + event.edata.item.maxscore
+     // totalMaxScore =  event.edata.totalMaxScore
       getQuestion(event.edata, event.ets.longValue())
     })
     val grandTotal = String.format("%s/%s", df.format(totalScore), df.format(totalMaxScore))
-    Aggregate(totalScore = totalScore, totalMaxScore = totalMaxScore, grandTotal = grandTotal, questionsList = questions)
+    Aggregate(totalScore = totalScore, totalMaxScore = newTotalMaxScore, grandTotal = grandTotal, questionsList = questions)
   }
 
   def getAssessment(event: Event): Row = {
