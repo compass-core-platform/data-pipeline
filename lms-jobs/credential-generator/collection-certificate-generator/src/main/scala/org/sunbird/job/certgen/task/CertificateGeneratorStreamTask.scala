@@ -8,6 +8,7 @@ import org.apache.flink.api.java.functions.KeySelector
 import org.apache.flink.api.java.typeutils.TypeExtractor
 import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
+import org.slf4j.LoggerFactory
 import org.sunbird.incredible.StorageParams
 import org.sunbird.incredible.processor.store.StorageService
 import org.sunbird.job.certgen.domain.Event
@@ -62,6 +63,7 @@ class CertificateGeneratorStreamTask(config: CertificateGeneratorConfig, kafkaCo
 
 // $COVERAGE-OFF$ Disabling scoverage as the below code can only be invoked within flink cluster
 object CertificateGeneratorStreamTask {
+  private[this] val logger = LoggerFactory.getLogger(classOf[CertificateGeneratorStreamTask])
 
   def main(args: Array[String]): Unit = {
     val configFilePath = Option(ParameterTool.fromArgs(args).get("config.file.path"))
@@ -73,6 +75,8 @@ object CertificateGeneratorStreamTask {
     val httpUtil = new HttpUtil
     val storageParams: StorageParams = StorageParams(ccgConfig.storageType, ccgConfig.storageKey, ccgConfig.storageSecret, ccgConfig.containerName,Option(ccgConfig.storageEndpoint))
     val storageService: StorageService = new StorageService(storageParams)
+    logger.info(s"StorageParams: $storageParams")
+    logger.info(s"storageService: $storageService")
     val task = new CertificateGeneratorStreamTask(ccgConfig, kafkaUtil, httpUtil, storageService)
     task.process()
   }
