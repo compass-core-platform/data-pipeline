@@ -24,7 +24,6 @@ object SvgGenerator {
   def generate(certificateExtension: CertificateExtension, encodedQrCode: String, svgTemplateUrl: String): String = {
     var cachedTemplate = svgTemplatesCache.get(svgTemplateUrl).getOrElse("")
     if (StringUtils.isEmpty(cachedTemplate)) {
-      logger.info("{} svg not cached , downloading", svgTemplateUrl)
       cachedTemplate = download(svgTemplateUrl)
       cachedTemplate = "data:image/svg+xml," + encodeData(cachedTemplate)
       cachedTemplate = cachedTemplate.replaceAll("\n", "").replaceAll("\t", "")
@@ -40,7 +39,6 @@ object SvgGenerator {
 
 
   private def replaceTemplateVars(svgContent: String, certificateExtension: CertificateExtension, encodeQrCode: String): String = {
-    logger.info("svgContent {}", svgContent)
     val varResolver = new VarResolver(certificateExtension)
     val certData: java.util.Map[String, String] = varResolver.getCertMetaData
     certData.put("qrCodeImage", "data:image/png;base64," + encodeQrCode)
