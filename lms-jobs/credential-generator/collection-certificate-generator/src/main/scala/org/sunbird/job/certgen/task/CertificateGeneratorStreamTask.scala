@@ -73,10 +73,9 @@ object CertificateGeneratorStreamTask {
     val ccgConfig = new CertificateGeneratorConfig(config)
     val kafkaUtil = new FlinkKafkaConnector(ccgConfig)
     val httpUtil = new HttpUtil
+    logger.info(s"StorageParams: storageType=${ccgConfig.storageType}, storageKey=${ccgConfig.storageKey}, storageSecret=${ccgConfig.storageSecret}, containerName=${ccgConfig.containerName},storageEndpoint=${ccgConfig.storageEndpoint}")
     val storageParams: StorageParams = StorageParams(ccgConfig.storageType, ccgConfig.storageKey, ccgConfig.storageSecret, ccgConfig.containerName,Option(ccgConfig.storageEndpoint))
     val storageService: StorageService = new StorageService(storageParams)
-    logger.info(s"StorageParams: $storageParams")
-    logger.info(s"storageService: $storageService")
     val task = new CertificateGeneratorStreamTask(ccgConfig, kafkaUtil, httpUtil, storageService)
     task.process()
   }
