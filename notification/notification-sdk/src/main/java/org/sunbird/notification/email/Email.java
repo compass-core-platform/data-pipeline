@@ -121,6 +121,7 @@ public class Email {
    * @param subject Subject of email
    */
   public boolean sendMail(List<String> emailList, String subject, String body) {
+    logger.info("printing emailList "+emailList);
     return sendMail(emailList, subject, body, null);
   }
 
@@ -138,6 +139,7 @@ public class Email {
     boolean response = true;
     try {
       Session session = getSession();
+      logger.info("printing session :: "+session);
       MimeMessage message = new MimeMessage(session);
       addRecipient(message, Message.RecipientType.TO, emailList);
       addRecipient(message, Message.RecipientType.CC, ccEmailList);
