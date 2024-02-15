@@ -124,6 +124,7 @@ class NotificationFunction(config: NotificationConfig,  @transient var notificat
         val subject = config.get(SUBJECT).asInstanceOf[String]
         val emailText = templateMap.get(DATA).asInstanceOf[String]
         val emailRequest = new EmailRequest(subject, emailIds, null, null, "", emailText, null)
+        logger.info("NotificationService:emailRequest : "+ emailRequest)
         notificationUtil.sendEmail(emailRequest)
     }
     

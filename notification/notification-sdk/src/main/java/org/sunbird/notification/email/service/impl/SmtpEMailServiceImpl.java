@@ -38,6 +38,7 @@ public class SmtpEMailServiceImpl implements IEmailService {
       return email.sendMail(
           emailReq.getTo(), emailReq.getSubject(), emailReq.getBody(), emailReq.getCc());
     } else {
+      logger.info("sendEmail emailReq.getBody() :: "+emailReq.getBody());
       return email.sendMail(emailReq.getTo(), emailReq.getSubject(), emailReq.getBody());
     }
   }
