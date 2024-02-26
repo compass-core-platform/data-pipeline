@@ -1,5 +1,6 @@
 package org.sunbird.job.notification.function
 
+import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.core.`type`.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -10,13 +11,14 @@ import org.slf4j.LoggerFactory
 import org.sunbird.job.notification.domain.{Event, NotificationMessage, NotificationType, NotificationUtil}
 import org.sunbird.job.notification.task.NotificationConfig
 import org.sunbird.job.notification.util.datasecurity.OneWayHashing
+import org.sunbird.job.util.CassandraUtil
 import org.sunbird.job.{BaseProcessKeyedFunction, Metrics}
 import org.sunbird.notification.beans.EmailRequest
 import org.sunbird.notification.utils.FCMResponse
 
 import java.util
 
-class NotificationFunction(config: NotificationConfig,  @transient var notificationUtil: NotificationUtil = null) extends BaseProcessKeyedFunction[String, Event, String](config) {
+class NotificationFunction(config: NotificationConfig,  @transient var notificationUtil: NotificationUtil = null,@transient var cassandraUtil: CassandraUtil = null) extends BaseProcessKeyedFunction[String, Event, String](config) {
     
     private[this] val logger = LoggerFactory.getLogger(classOf[NotificationFunction])
     
@@ -53,11 +55,13 @@ class NotificationFunction(config: NotificationConfig,  @transient var notificat
         maxIterations = getMaxIterations
         notificationUtil =  new NotificationUtil(config.mail_server_from_email, config.mail_server_username, config.mail_server_password, config.mail_server_host, config.mail_server_port,
             config.sms_auth_key, config.sms_default_sender, config.fcm_account_key)
+        cassandraUtil = new CassandraUtil(config.dbHost, config.dbPort,false)
         logger.info("NotificationService:initialize: Service config initialized")
     }
     
     override def close(): Unit = {
         super.close()
+        cassandraUtil.close()
     }
     
     override def metricsList(): scala.List[String] = {
@@ -123,9 +127,14 @@ class NotificationFunction(config: NotificationConfig,  @transient var notificat
         val config = notificationMap.get(CONFIG).get.asInstanceOf[scala.collection.immutable.Map[String, AnyRef]].asJava
         val subject = config.get(SUBJECT).asInstanceOf[String]
         val emailText = templateMap.get(DATA).asInstanceOf[String]
+        val notificationId = templateMap.getOrDefault("notificationId","").asInstanceOf[String]
         val emailRequest = new EmailRequest(subject, emailIds, null, null, "", emailText, null)
         logger.info("NotificationService:emailRequest : "+ emailRequest.getBody +" :: "+emailRequest.getParam+ " :: "+emailRequest.getTemplateName+ " :: "+emailRequest.getTo)
-        notificationUtil.sendEmail(emailRequest)
+        var isSuccess = notificationUtil.sendEmail(emailRequest)
+     //   if (isSuccess && notificationId.nonEmpty) {
+            updateScheduleNotification("972f7282-5325-40c6-ace8-74dd9419dd00","is_delivered",true);
+    //    }
+        isSuccess
     }
     
     def sendSmsNotification(notificationMap: scala.collection.immutable.HashMap[String, AnyRef], msgId: String) = {
@@ -200,5 +209,13 @@ class NotificationFunction(config: NotificationConfig,  @transient var notificat
         } else {
             metrics.incCounter(config.skippedEventCount)
         }
+    }
+
+    def updateScheduleNotification(id: String, colName: String, value: Any): Unit = {
+        val query = QueryBuilder.update(config.notificationKeySpace, config.notificationTableName).where()
+          .`with`(QueryBuilder.set(colName, value))
+          .where(QueryBuilder.eq("id", id))
+          .ifExists
+        cassandraUtil.update(query)
     }
 }

@@ -39,5 +39,8 @@ class NotificationConfig(override val config: Config) extends BaseJobConfig(conf
     //val notificationFailedOutputTag: OutputTag[NotificationMessage] = OutputTag[NotificationMessage]("notification-failed")
     val notificationFailedOutputTagName = "notification-failed-events"
     val notificationFailedOutputTag: OutputTag[String] = OutputTag[String](notificationFailedOutputTagName)
-    
+    val dbHost: String = config.getString("lms-cassandra.host")
+    val dbPort: Int = config.getInt("lms-cassandra.port")
+    val notificationKeySpace: String = config.getString("notifications.cassandra.sbKeyspace")
+    val notificationTableName: String = config.getString("scheduleNotifications.cassandra.Table")
 }
