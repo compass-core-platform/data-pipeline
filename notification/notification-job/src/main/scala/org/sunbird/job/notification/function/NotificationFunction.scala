@@ -128,12 +128,13 @@ class NotificationFunction(config: NotificationConfig,  @transient var notificat
         val subject = config.get(SUBJECT).asInstanceOf[String]
         val emailText = templateMap.get(DATA).asInstanceOf[String]
         val notificationId = templateMap.getOrDefault("notificationId","").asInstanceOf[String]
+        logger.info("notificationId : "+notificationId)
         val emailRequest = new EmailRequest(subject, emailIds, null, null, "", emailText, null)
         logger.info("NotificationService:emailRequest : "+ emailRequest.getBody +" :: "+emailRequest.getParam+ " :: "+emailRequest.getTemplateName+ " :: "+emailRequest.getTo)
         var isSuccess = notificationUtil.sendEmail(emailRequest)
-     //   if (isSuccess && notificationId.nonEmpty) {
-            updateScheduleNotification("972f7282-5325-40c6-ace8-74dd9419dd00","is_delivered",true);
-    //    }
+        if (isSuccess && notificationId.nonEmpty) {
+            updateScheduleNotification(notificationId,"is_delivered",true);
+        }
         isSuccess
     }
     
