@@ -127,7 +127,9 @@ class NotificationFunction(config: NotificationConfig,  @transient var notificat
         val config = notificationMap.get(CONFIG).get.asInstanceOf[scala.collection.immutable.Map[String, AnyRef]].asJava
         val subject = config.get(SUBJECT).asInstanceOf[String]
         val emailText = templateMap.get(DATA).asInstanceOf[String]
-        val notificationId = templateMap.getOrDefault("notificationId","").asInstanceOf[String]
+        val params = notificationMap.get("params").get.asInstanceOf[scala.collection.immutable.Map[String, AnyRef]].asJava
+        logger.info("params : "+params)
+        val notificationId = params.getOrDefault("notificationId","").asInstanceOf[String]
         logger.info("notificationId : "+notificationId)
         val emailRequest = new EmailRequest(subject, emailIds, null, null, "", emailText, null)
         logger.info("NotificationService:emailRequest : "+ emailRequest.getBody +" :: "+emailRequest.getParam+ " :: "+emailRequest.getTemplateName+ " :: "+emailRequest.getTo)
