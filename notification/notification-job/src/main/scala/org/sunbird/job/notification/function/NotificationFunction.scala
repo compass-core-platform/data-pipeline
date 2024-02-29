@@ -124,10 +124,11 @@ class NotificationFunction(config: NotificationConfig,  @transient var notificat
         val emailIds : util.List[String] = notificationMap.get(IDS).get.asInstanceOf[List[String]].asJava
         logger.info("NotificationService:sendEmailNotification emailids: "+ emailIds)
         val templateMap : util.Map[String, AnyRef] = notificationMap.get(TEMPLATE).get.asInstanceOf[scala.collection.immutable.Map[String, AnyRef]].asJava
+        logger.info("templateMap : "+templateMap)
         val config = notificationMap.get(CONFIG).get.asInstanceOf[scala.collection.immutable.Map[String, AnyRef]].asJava
         val subject = config.get(SUBJECT).asInstanceOf[String]
         val emailText = templateMap.get(DATA).asInstanceOf[String]
-        val params = notificationMap.get("params").get.asInstanceOf[scala.collection.immutable.Map[String, AnyRef]].asJava
+        val params = templateMap.get("params").asInstanceOf[scala.collection.immutable.Map[String, AnyRef]].asJava
         logger.info("params : "+params)
         val notificationId = params.getOrDefault("notificationId","").asInstanceOf[String]
         logger.info("notificationId : "+notificationId)
