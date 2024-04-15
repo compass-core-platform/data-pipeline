@@ -400,8 +400,8 @@ private def findIndex(terms: Seq[Map[String, Any]], competency: String): Option[
   }
 
   private def extractCategories(response: Map[String, AnyRef]): Seq[Map[String, Any]] = {
-    val result = response.getOrElse("result", Map.empty[String, AnyRef])
-    val frameworkResult = result.getOrElse("framework", Map.empty[String, AnyRef])
+   // val result = response.getOrElse("result", Map.empty[String, AnyRef])
+    val frameworkResult = response.getOrElse("framework", Map.empty[String, AnyRef])
     frameworkResult.getOrElse("categories", Seq.empty[Any]).asInstanceOf[Seq[Map[String, Any]]]
   }
 
