@@ -277,7 +277,7 @@ trait IssueCertificateHelper {
       val (framework, category, term) = parseCompetencyString(competencyName)
       logger.info(s"Framework: $framework, Category: $category, Term: $term")
       val name = fetchTermDetails(category, framework, term)(metrics, config, cache, httpUtil)
-      logger.info("printing term name" +name)
+      logger.info("printing term name :: " +name)
       val (index, levelNumber) = fetchLevelAndIndex(framework, competencyName,competencyLevel)(metrics, config, cache, httpUtil)
       logger.info(s"printing index  $index, and LevelNumber: $levelNumber")
 
