@@ -351,7 +351,7 @@ trait IssueCertificateHelper {
     val authorizationHeader = s"Bearer ${config.accessToken}"
     val headers = Map("Authorization" -> authorizationHeader)
 
-    val response: Map[String, AnyRef] = getAPICall(url, "response")(config, httpUtil, metrics)
+    val response: Map[String, AnyRef] = getAPICall(url, "")(config, httpUtil, metrics)
     logger.info("response ::" +response)
     val categories = extractCategories(response)
     val terms = extractTerms(categories)
