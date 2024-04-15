@@ -182,6 +182,7 @@ trait IssueCertificateHelper {
     def getAPICall(url: String, responseParam: String)(config:CollectionCertPreProcessorConfig, httpUtil: HttpUtil, metrics: Metrics): Map[String,AnyRef] = {
       val response = httpUtil.get(url, config.defaultHeaders)
         if(200 == response.status) {
+          logger.info("response.status for url ",response.status)
             ScalaJsonUtil.deserialize[Map[String, AnyRef]](response.body)
               .getOrElse("result", Map[String, AnyRef]()).asInstanceOf[Map[String, AnyRef]]
               .getOrElse(responseParam, Map[String, AnyRef]()).asInstanceOf[Map[String, AnyRef]]
@@ -351,7 +352,7 @@ trait IssueCertificateHelper {
     val authorizationHeader = s"Bearer ${config.accessToken}"
     val headers = Map("Authorization" -> authorizationHeader)
 
-    val response: Map[String, AnyRef] = getAPICall(url, "")(config, httpUtil, metrics)
+    val response: Map[String, AnyRef] = getAPICall(url, "framework")(config, httpUtil, metrics)
     logger.info("response ::" +response)
     val categories = extractCategories(response)
     val terms = extractTerms(categories)
@@ -401,8 +402,7 @@ private def findIndex(terms: Seq[Map[String, Any]], competency: String): Option[
 
   private def extractCategories(response: Map[String, AnyRef]): Seq[Map[String, Any]] = {
    // val result = response.getOrElse("result", Map.empty[String, AnyRef])
-    val frameworkResult = response.getOrElse("framework", Map.empty[String, AnyRef])
-    frameworkResult.getOrElse("categories", Seq.empty[Any]).asInstanceOf[Seq[Map[String, Any]]]
+    response.getOrElse("categories", Seq.empty[Any]).asInstanceOf[Seq[Map[String, Any]]]
   }
 
 }
