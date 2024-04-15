@@ -363,12 +363,15 @@ trait IssueCertificateHelper {
     logger.info("competencyLevelNumber ::" +competencyLevelNumber)
     (competencyIndex, competencyLevelNumber)
   }
-private def findIndex(terms: Seq[Map[String, Any]], competency: String): Option[Int] = {
-  terms.collectFirst {
-    case term if term.getOrElse("identifier", "").asInstanceOf[String] == competency =>
-      term.getOrElse("index", None).asInstanceOf[Option[Int]]
-  }.flatten
-}
+  private def findIndex(terms: Seq[Map[String, Any]], competency: String): Option[Int] = {
+    terms.collectFirst {
+      case term if term.getOrElse("identifier", "").asInstanceOf[String] == competency =>
+        term.get("index").flatMap {
+          case index: Int => Some(index)
+          case _ => None
+        }
+    }.flatten
+  }
 
   private def findLevelNumber(categories: Seq[Map[String, Any]], competencyLevel: String): Option[Int] = {
     val associations = for {
@@ -388,13 +391,14 @@ private def findIndex(terms: Seq[Map[String, Any]], competency: String): Option[
       }
       if (identifier.contains(competencyLevel)) {
         val moreProperties = assoc.getOrElse("moreProperties", Map.empty[String, Any]).asInstanceOf[Map[String, Any]]
-        levelNumber = moreProperties.get("levelNumber").collect { case n: Int => n }
+        levelNumber = moreProperties.get("levelNumber").flatMap {
+          case n: Int => Some(n)
+          case _ => None
+        }
       }
     }
-
     levelNumber
   }
-
 
   private def extractTerms(categories: Seq[Map[String, Any]]): Seq[Map[String, Any]] = {
     categories.flatMap(_.getOrElse("terms", Seq.empty[Map[String, Any]]).asInstanceOf[Seq[Map[String, Any]]])
