@@ -122,8 +122,10 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
           scoreOption.getOrElse(0.0)
         }
         logger.info("printing totalscore from generateCertificate" +totalScore.toString)
-        val level = fetchCompetencyLevel(event, context)(metrics)
-        addUserAssessment(event,context,uuid,totalScore.toString,level)(metrics)
+//        val level = fetchCompetencyLevel(event, context)(metrics)
+        val index: Int = event.eData.get("index").map(_.asInstanceOf[Int]).getOrElse(0)
+        logger.info("printing index :: "+index)
+        addUserAssessment(event,context,uuid,totalScore.toString,index)(metrics)
         val related = event.related
         val userEnrollmentData = UserEnrollmentData(related.getOrElse(config.BATCH_ID, "").asInstanceOf[String], certModel.identifier,
           related.getOrElse(config.COURSE_ID, "").asInstanceOf[String], event.courseName, event.templateId,
@@ -155,7 +157,7 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
     logger.info("fetchCompetencyLevel level value is :: " +level)
     level
   }
-  def addUserAssessment(event: Event, context: KeyedProcessFunction[String, Event, String]#Context, uuid: String, totalScore: String, level: Int)(implicit metrics: Metrics): Unit = {
+  def addUserAssessment(event: Event, context: KeyedProcessFunction[String, Event, String]#Context, uuid: String, totalScore: String, index: Int)(implicit metrics: Metrics): Unit = {
     logger.info("addUserAssessment:" + event)
     val primaryCategory:String = event.eData.get("primaryCategory").getOrElse("").asInstanceOf[String]
     val typeValue = if (primaryCategory.toLowerCase == "course") "CBP" else "SELF"
@@ -165,9 +167,9 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
         "competency" -> event.competencyName,
         "certificateId" -> uuid,
         "dateOfIssuance" -> event.issuedDate,
-        "competencyId" -> 1,
+        "competencyId" -> index,
         "score" -> totalScore,
-        "levelNumber" -> level,
+        "levelNumber" ->  event.eData.get("competencyLevel"),
         "primaryCategory" -> primaryCategory,
         "type" -> typeValue
       )

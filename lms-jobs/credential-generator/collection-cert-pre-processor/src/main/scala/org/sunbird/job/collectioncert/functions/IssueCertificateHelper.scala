@@ -2,7 +2,7 @@ package org.sunbird.job.collectioncert.functions
 
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.{Row, TypeTokens}
-import com.twitter.util.Config.intoOption
+import com.twitter.util.Config.{intoList, intoOption}
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import org.sunbird.job.Metrics
@@ -276,7 +276,8 @@ trait IssueCertificateHelper {
       logger.info("printing competencyLevel" +competencyLevel)
       val (framework, category, term) = parseCompetencyString(competencyName)
       logger.info(s"Framework: $framework, Category: $category, Term: $term")
-
+      val name = fetchTermDetails(category, framework, term)(metrics, config, cache, httpUtil)
+      logger.info("printing term name :: " +name)
       val (index, levelNumber) = fetchLevelAndIndex(framework, competencyName,competencyLevel)(metrics, config, cache, httpUtil)
       logger.info(s"printing index  $index, and LevelNumber: $levelNumber")
 
@@ -299,9 +300,10 @@ trait IssueCertificateHelper {
                 "related" ->  related,
                 "name" -> certName,
                 "tag" -> event.batchId,
-                "competencyName" -> index,
+                "competencyName" -> name,
                 "competencyLevel" -> levelNumber,
-                "primaryCategory" -> primaryCategory
+                "primaryCategory" -> primaryCategory,
+                "index" -> index
             )
 
         logger.info("IssueCertificateHelper:: generateCertificateEvent:: eData:: " + eData)
