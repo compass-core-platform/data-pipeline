@@ -124,7 +124,7 @@ class CertificateGeneratorFunction(config: CertificateGeneratorConfig, httpUtil:
         logger.info("printing totalscore from generateCertificate" +totalScore.toString)
 //        val level = fetchCompetencyLevel(event, context)(metrics)
         val index: Int = event.eData.get("index").map(_.asInstanceOf[Int]).getOrElse(0)
-        logger.info("printing index :: "+index)
+        logger.info("printing index ::  "+index)
         addUserAssessment(event,context,uuid,totalScore.toString,index)(metrics)
         val related = event.related
         val userEnrollmentData = UserEnrollmentData(related.getOrElse(config.BATCH_ID, "").asInstanceOf[String], certModel.identifier,
