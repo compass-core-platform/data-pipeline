@@ -183,7 +183,6 @@ trait IssueCertificateHelper {
       val response = httpUtil.get(url, config.defaultHeaders)
         if(200 == response.status) {
           logger.info("response.status for url ",response.status)
-          logger.info("response.body for url ",response.body)
             ScalaJsonUtil.deserialize[Map[String, AnyRef]](response.body)
               .getOrElse("result", Map[String, AnyRef]()).asInstanceOf[Map[String, AnyRef]]
               .getOrElse(responseParam, Map[String, AnyRef]()).asInstanceOf[Map[String, AnyRef]]
