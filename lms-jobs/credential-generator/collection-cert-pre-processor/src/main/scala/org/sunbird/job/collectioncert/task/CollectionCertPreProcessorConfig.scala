@@ -50,6 +50,7 @@ class CollectionCertPreProcessorConfig(override val config: Config) extends Base
     val contentReadApi = config.getString("content_read_api")
     val termReadApi = config.getString("term_read_api")
     val accessToken = config.getString("api_key")
+    val frameworkReadApi = config.getString("framework_read_api")
 
     // Metric List
     val totalEventsCount = "total-events-count"

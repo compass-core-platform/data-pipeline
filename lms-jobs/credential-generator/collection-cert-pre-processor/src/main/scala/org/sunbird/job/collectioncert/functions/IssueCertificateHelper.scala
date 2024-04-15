@@ -2,6 +2,7 @@ package org.sunbird.job.collectioncert.functions
 
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.{Row, TypeTokens}
+import com.twitter.util.Config.intoOption
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import org.sunbird.job.Metrics
@@ -236,7 +237,7 @@ trait IssueCertificateHelper {
         }
     }
 
-  def fetchTermDetails(category: String,framework: String,term: String)(metrics: Metrics, config: CollectionCertPreProcessorConfig, cache: DataCache, httpUtil: HttpUtil): String = {
+    def fetchTermDetails(category: String,framework: String,term: String)(metrics: Metrics, config: CollectionCertPreProcessorConfig, cache: DataCache, httpUtil: HttpUtil): String = {
     val competencyMetadata = cache.getWithRetry(category)
     if (null == competencyMetadata || competencyMetadata.isEmpty) {
 //      val url = "https://compass-dev.tarento.com/api/" + config.termReadApi + "/"+term+"?framework="+framework"&+category="+category"
@@ -270,13 +271,13 @@ trait IssueCertificateHelper {
       }.getOrElse("")
       val competencyName = courseData.getOrElse("competencyName", List.empty[String]).asInstanceOf[List[String]].headOption.getOrElse("")
       val competencyLevel = courseData.getOrElse("compentencyLevel", List.empty[String]).asInstanceOf[List[String]].headOption.getOrElse("")
-
+      logger.info("printing competencyName" +competencyName)
+      logger.info("printing competencyLevel" +competencyLevel)
       val (framework, category, term) = parseCompetencyString(competencyName)
-      val name = fetchTermDetails(category,framework, term)(metrics, config, cache, httpUtil)
+      logger.info(s"Framework: $framework, Category: $category, Term: $term")
 
-
-      val (frameworkCompetencyLevel, categoryCompetencyLevel, termCompetencyLevel) = parseCompetencyString(competencyLevel)
-      val level = fetchTermDetails(categoryCompetencyLevel,frameworkCompetencyLevel, termCompetencyLevel)(metrics, config, cache, httpUtil)
+      val (index, levelNumber) = fetchLevelAndIndex(framework, competencyName,competencyLevel)(metrics, config, cache, httpUtil)
+      logger.info(s"printing index  $index, and LevelNumber: $levelNumber")
 
 
       val dateFormatter = new SimpleDateFormat("yyyy-MM-dd")
@@ -297,8 +298,8 @@ trait IssueCertificateHelper {
                 "related" ->  related,
                 "name" -> certName,
                 "tag" -> event.batchId,
-                "competencyName" -> name,
-                "competencyLevel" -> level,
+                "competencyName" -> index,
+                "competencyLevel" -> levelNumber,
                 "primaryCategory" -> primaryCategory
             )
 
@@ -344,4 +345,64 @@ trait IssueCertificateHelper {
       s
     }
   }
+
+  def fetchLevelAndIndex(framework: String, competency: String, competencyLevel: String)(metrics: Metrics, config: CollectionCertPreProcessorConfig, cache: DataCache, httpUtil: HttpUtil): (Option[Int], Option[Int]) = {
+    val url = s"https://compass-dev.tarento.com/api/${config.frameworkReadApi}/$framework"
+    val authorizationHeader = s"Bearer ${config.accessToken}"
+    val headers = Map("Authorization" -> authorizationHeader)
+
+    val response: Map[String, AnyRef] = getAPICall(url, "response")(config, httpUtil, metrics)
+    logger.info("response ::" +response)
+    val categories = extractCategories(response)
+    val terms = extractTerms(categories)
+
+    val competencyIndex = findIndex(terms, competency)
+    val competencyLevelNumber = findLevelNumber(categories, competencyLevel)
+    logger.info("competencyIndex ::" +competencyIndex)
+    logger.info("competencyLevelNumber ::" +competencyLevelNumber)
+    (competencyIndex, competencyLevelNumber)
+  }
+private def findIndex(terms: Seq[Map[String, Any]], competency: String): Option[Int] = {
+  terms.collectFirst {
+    case term if term.getOrElse("identifier", "").asInstanceOf[String] == competency =>
+      term.getOrElse("index", None).asInstanceOf[Option[Int]]
+  }.flatten
+}
+
+  private def findLevelNumber(categories: Seq[Map[String, Any]], competencyLevel: String): Option[Int] = {
+    val associations = for {
+      category <- categories
+      term <- category.getOrElse("terms", Seq.empty[Map[String, Any]]).asInstanceOf[Seq[Map[String, Any]]]
+      association <- term.getOrElse("associations", Seq.empty[Map[String, Any]]).asInstanceOf[Seq[Map[String, Any]]]
+    } yield association
+
+    var levelNumber: Option[Int] = None
+
+    val iterator = associations.iterator
+    while (levelNumber.isEmpty && iterator.hasNext) {
+      val assoc = iterator.next()
+      val identifier = assoc.get("identifier").flatMap {
+        case id: String => Some(id)
+        case _ => None
+      }
+      if (identifier.contains(competencyLevel)) {
+        val moreProperties = assoc.getOrElse("moreProperties", Map.empty[String, Any]).asInstanceOf[Map[String, Any]]
+        levelNumber = moreProperties.get("levelNumber").collect { case n: Int => n }
+      }
+    }
+
+    levelNumber
+  }
+
+
+  private def extractTerms(categories: Seq[Map[String, Any]]): Seq[Map[String, Any]] = {
+    categories.flatMap(_.getOrElse("terms", Seq.empty[Map[String, Any]]).asInstanceOf[Seq[Map[String, Any]]])
+  }
+
+  private def extractCategories(response: Map[String, AnyRef]): Seq[Map[String, Any]] = {
+    val result = response.getOrElse("result", Map.empty[String, AnyRef])
+    val frameworkResult = result.getOrElse("framework", Map.empty[String, AnyRef])
+    frameworkResult.getOrElse("categories", Seq.empty[Any]).asInstanceOf[Seq[Map[String, Any]]]
+  }
+
 }
